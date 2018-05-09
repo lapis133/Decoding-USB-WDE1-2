@@ -27,7 +27,7 @@ def main():
    #ln1 = line.partition(b";")
    
    line = (line.split(b";"))  # Data is a bytes object !!! Therefore b
-   #for i in range(0,8):      # Resuts in a Tuple
+   #for i in range(0,8):      # Results in a Tuple
       #print (line[i])
    print (b"Obergesch " + line[0] + b" C  " + line[8] + b" %")
    print (b"Halle     " + line[1] + b" C  " + line[9] + b" %")

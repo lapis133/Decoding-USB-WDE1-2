@@ -57,9 +57,21 @@ def serial_init():
             print ("Unable to open serial port %s") % port
             time.sleep(5)
 
+#----------------------------[run_test]
+def run_test():
+    line = "$1;1;;30;31;32;33;34;35;36;37;50;51;52;53;54;55;56;57"
+    analyze(line)
+    once_a_day()
+
 #----------------------------[main]
 def main():
     global ser
+
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "debug":
+            run_test()
+            return
+
     schedule.every().day.at("08:00").do(once_a_day)
     serial_init()
 
@@ -69,14 +81,7 @@ def main():
         schedule.run_pending()      # check clock
         line = ser.readline()       # read line from WDE1
         analyze(line)               # analyze
-
-#----------------------------[test]
-def test():
-    line = "$1;1;;30;31;32;33;34;35;36;37;50;51;52;53;54;55;56;57"
-    analyze(line)
-    once_a_day()
-    
+   
 #----------------------------[]     
 if __name__=='__main__':
     main()
-    #test()

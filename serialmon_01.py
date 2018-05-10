@@ -45,22 +45,32 @@ def analyze(line):
     print ("Buero     " + values[7] + "°C    " + values[15] + " %")
     return
 
+#----------------------------[serial_init]
+def serial_init():
+    global ser
+    while True:
+        try:
+            ser = serial.Serial(port,9600)  # open serial line        
+            print ("connected: " + port)
+            return
+        except:
+            print ("Unable to open serial port %s") % port
+            time.sleep(5)
+
 #----------------------------[main]
 def main():
-    ser = serial.Serial(port,9600)  # open serial line        
-    if not ser.isOpen():
-        print ("Unable to open serial port %s") % port
-        sys.exit(1)
-    print ("connected: " + port)
-
+    global ser
     schedule.every().day.at("08:00").do(once_a_day)
+    serial_init()
 
     while True:
+        if not ser.isOpen():
+            serial_init()
         schedule.run_pending()      # check clock
         line = ser.readline()       # read line from WDE1
         analyze(line)               # analyze
 
-#----------------------------[main]
+#----------------------------[test]
 def test():
     line = "$1;1;;30;31;32;33;34;35;36;37;50;51;52;53;54;55;56;57"
     analyze(line)

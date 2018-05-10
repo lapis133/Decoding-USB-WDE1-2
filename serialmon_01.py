@@ -1,12 +1,20 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import RPi.GPIO as GPIO
 import schedule
 import smtplib
 import serial
 import time
 import sys
 import os
+
+led_grn = 12
+led_red = 16
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(led_grn, GPIO.OUT)
+GPIO.setup(led_red, GPIO.OUT)
 
 port = '/dev/ttyUSB0'     # serial port of USB-WDE1
 server = smtplib.SMTP(os.environ.get('SERIALMON_SMPT_HOST'), os.environ.get('SERIALMON_SMPT_PORT'))
@@ -48,13 +56,20 @@ def analyze(line):
 #----------------------------[serial_init]
 def serial_init():
     global ser
+    GPIO.output(led_grn, GPIO.LOW)
+    GPIO.output(led_red, GPIO.HIGH)
     while True:
         try:
             ser = serial.Serial(port,9600)  # open serial line        
             print ("connected: " + port)
+            GPIO.output(led_grn, GPIO.HIGH)
+            GPIO.output(led_red, GPIO.LOW)
             return
         except:
             print ("Unable to open serial port %s") % port
+            GPIO.output(led_red, GPIO.LOW)
+            time.sleep(0.5)            
+            GPIO.output(led_red, GPIO.HIGH)
             time.sleep(5)
 
 #----------------------------[run_test]
@@ -70,6 +85,7 @@ def main():
     if len(sys.argv) == 2:
         if sys.argv[1] == "debug":
             run_test()
+            GPIO.cleanup()
             return
 
     schedule.every().day.at("08:00").do(once_a_day)
@@ -81,7 +97,13 @@ def main():
         schedule.run_pending()      # check clock
         line = ser.readline()       # read line from WDE1
         analyze(line)               # analyze
+        GPIO.output(led_grn, GPIO.LOW)
+        time.sleep(0.5)            
+        GPIO.output(led_grn, GPIO.HIGH)
    
 #----------------------------[]     
 if __name__=='__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        GPIO.cleanup()

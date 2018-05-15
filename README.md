@@ -1,17 +1,23 @@
 # Decoding-USB-WDE1-2
 In the first step I want to make an eye friendly page in which Rooms and Temperatures are displayed. 
 The incoming string looks like this:
+```
 $1;1; ;25,9; ;23,8;24,4;24,8;25,4;23,6;23,2;54; ;61;61;60;58;63;63; ; ; ; ; ;0
+```
 
 ## Preparation
-* sudo apt-get install python-serial python3-serial python-rpi.gpio python3-rpi.gpio python-schedule python3-schedule
+```
+sudo apt-get install python-serial python-rpi.gpio python-schedule
+```
 
 add in ~/.bashrc:
-* export SERIALMON_SMPT_HOST=
-* export SERIALMON_SMPT_PORT=
-* export SERIALMON_SMPT_EMAIL=
-* export SERIALMON_SMPT_PASSWORD=
-* export SERIALMON_DESTINATION_EMAIL=
+```bash
+export SERIALMON_SMPT_HOST=
+export SERIALMON_SMPT_PORT=
+export SERIALMON_SMPT_EMAIL=
+export SERIALMON_SMPT_PASSWORD=
+export SERIALMON_DESTINATION_EMAIL=
+```
 
 ### optional hardware layout
 http://rpi.science.uoit.ca/lab/gpio/
@@ -28,8 +34,12 @@ http://rpi.science.uoit.ca/lab/gpio/
 ```
 
 ## Installation
-* sudo cp serialmon_01.py /usr/local/bin
-* sudo chmod +x /usr/local/bin/serialmon_01.py
+```
+sudo cp serialmon_01.py /usr/local/bin
+sudo chmod +x /usr/local/bin/serialmon_01.py
+```
 
 add in /etc/rc.local before the last line (exit 0):
-* /usr/local/bin/serialmon_01.py &
+```
+/usr/local/bin/serialmon_01.py &
+```

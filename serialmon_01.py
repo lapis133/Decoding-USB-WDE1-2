@@ -1,13 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 try:
     import RPi.GPIO as GPIO
-except:
-    print ("start")
+except ImportError:
+    import gpio as GPIO
 import schedule
 import smtplib
 import serial
+from serial import SerialException
 import time
 import sys
 import os
@@ -15,12 +16,9 @@ import os
 led_grn = 12
 led_red = 16
 
-try:
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(led_grn, GPIO.OUT)
-    GPIO.setup(led_red, GPIO.OUT)
-except:
-    print ("not on pi")
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(led_grn, GPIO.OUT)
+GPIO.setup(led_red, GPIO.OUT)
 
 port = '/dev/ttyUSB0'     # serial port of USB-WDE1
 server = smtplib.SMTP(os.environ.get('SERIALMON_SMPT_HOST'), os.environ.get('SERIALMON_SMPT_PORT'))
@@ -59,36 +57,23 @@ def analyze(line):
     print ("Buero     " + values[7] + "°C    " + values[15] + " %")
     return
 
-#----------------------------[set_led]
-def set_led(led, state):
-    if (state == 0):
-        try:
-            GPIO.output(led, GPIO.LOW)
-        except:
-            print ("led aus")
-    else:
-        try:
-            GPIO.output(led, GPIO.HIGH)
-        except:
-            print ("led ein")
-
 #----------------------------[serial_init]
 def serial_init():
     global ser
-    set_led(led_grn, 0)
-    set_led(led_red, 1)
+    GPIO.output(led_grn, GPIO.LOW)
+    GPIO.output(led_red, GPIO.HIGH)
     while True:
         try:
             ser = serial.Serial(port,9600)  # open serial line        
             print ("connected: " + port)
-            set_led(led_grn, 1)
-            set_led(led_red, 0)
+            GPIO.output(led_grn, GPIO.HIGH)
+            GPIO.output(led_red, GPIO.LOW)
             return
-        except:
+        except SerialException:
             print ("Unable to open serial port %s") % port
-            set_led(led_red, 0)
+            GPIO.output(led_red, GPIO.LOW)
             time.sleep(0.5)            
-            set_led(led_red, 1)
+            GPIO.output(led_red, GPIO.HIGH)
             time.sleep(5)
 
 #----------------------------[run_test]
@@ -104,10 +89,7 @@ def main():
     if len(sys.argv) == 2:
         if sys.argv[1] == "debug":
             run_test()
-            try:
-                GPIO.cleanup()
-            except:
-                print ("exit")        
+            GPIO.cleanup()
             return
 
     schedule.every().day.at("08:00").do(once_a_day)
@@ -119,17 +101,14 @@ def main():
         schedule.run_pending()      # check clock
         line = ser.readline()       # read line from WDE1
         analyze(line)               # analyze
-        set_led(led_grn, 0)
+        GPIO.output(led_grn, GPIO.LOW0)
         time.sleep(0.5)            
-        set_led(led_grn, 1)
+        GPIO.output(led_grn, GPIO.HIGH)
    
 #----------------------------[]     
 if __name__=='__main__':
     try:
         main()
     except KeyboardInterrupt:
-        try:
-            GPIO.cleanup()
-        except:
-            print ("exit")        
+        GPIO.cleanup()
     

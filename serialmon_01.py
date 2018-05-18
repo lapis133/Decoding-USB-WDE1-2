@@ -33,7 +33,7 @@ def send_mail():
     """ % (values)
 
     config = configparser.ConfigParser()
-    config.read('serialmon_01.ini')
+    config.read('/usr/local/etc/serialmon_01.ini')
     try:
         host  = config["EMAIL"]["SMPT_HOST"]
         port  = config["EMAIL"]["SMPT_PORT"]

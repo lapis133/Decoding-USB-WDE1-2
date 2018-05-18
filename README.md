@@ -9,7 +9,7 @@ $1;1; ;25,9; ;23,8;24,4;24,8;25,4;23,6;23,2;54; ;61;61;60;58;63;63; ; ; ; ; ;0
 ```
 sudo apt-get install python3-serial python3-rpi.gpio python3-schedule
 ```
-fill the variables in serialmon.cfg
+fill the variables in serialmon.ini
 
 ### optional hardware layout
 http://rpi.science.uoit.ca/lab/gpio/

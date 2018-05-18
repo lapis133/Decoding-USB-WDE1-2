@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 #----------------------------[setmode]
@@ -27,4 +27,8 @@ def HIGH():
 
 #----------------------------[output]
 def output(led, state):
+    return
+
+#----------------------------[cleanup]
+def cleanup():
     return

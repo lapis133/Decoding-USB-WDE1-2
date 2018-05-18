@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 try:
@@ -70,7 +70,7 @@ def serial_init():
             GPIO.output(led_red, GPIO.LOW)
             return
         except SerialException:
-            print ("Unable to open serial port %s") % port
+            print ("Unable to open serial port " + port)
             GPIO.output(led_red, GPIO.LOW)
             time.sleep(0.5)            
             GPIO.output(led_red, GPIO.HIGH)

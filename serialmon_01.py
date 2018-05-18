@@ -5,6 +5,7 @@ try:
     import RPi.GPIO as GPIO
 except ImportError:
     import gpio as GPIO
+import configparser
 import datetime
 import schedule
 import smtplib
@@ -12,7 +13,6 @@ import serial
 from serial import SerialException
 import time
 import sys
-import os
 
 led_grn = 12
 led_red = 16
@@ -22,7 +22,6 @@ GPIO.setup(led_grn, GPIO.OUT)
 GPIO.setup(led_red, GPIO.OUT)
 
 port = '/dev/ttyUSB0'     # serial port of USB-WDE1
-server = smtplib.SMTP(os.environ.get('SERIALMON_SMPT_HOST'), os.environ.get('SERIALMON_SMPT_PORT'))
 values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 
@@ -32,9 +31,27 @@ def send_mail():
 
     %s
     """ % (values)
-    server.login(os.environ.get('SERIALMON_SMPT_EMAIL'), os.environ.get('SERIALMON_SMPT_PASSWORD'))
-    server.sendmail(os.environ.get('SERIALMON_SMPT_EMAIL'), os.environ.get('SERIALMON_DESTINATION_EMAIL'), message)
-    server.quit()
+
+    config = configparser.ConfigParser()
+    config.read('serialmon_01.ini')
+    try:
+        host  = config["EMAIL"]["SMPT_HOST"]
+        port  = config["EMAIL"]["SMPT_PORT"]
+        email = config["EMAIL"]["SMPT_EMAIL"]
+        passw = config["EMAIL"]["SMPT_PASSWORD"]
+        dest  = config["EMAIL"]["DESTINATION_EMAIL"]
+    except KeyError:
+        print ("serialmon_01.ini not filled")
+        return
+    try:
+        server = smtplib.SMTP(host, port)
+        server.login(email, passw)
+        server.sendmail(email, dest, message)
+        server.quit()
+    except Exception:
+        print ("SMTP error")
+        return
+        
     return
 
 #----------------------------[once_a_hour]
@@ -112,7 +129,6 @@ def main():
             GPIO.cleanup()
             return
 
-    once_a_hour()
     schedule.every().day.at("08:00").do(once_a_day)
     schedule.every().hour.do(once_a_hour)    
     serial_init()

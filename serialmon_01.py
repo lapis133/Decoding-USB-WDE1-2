@@ -63,7 +63,8 @@ def once_a_hour():
         fobj_out = open("/var/log/serialmon_01.log","a")
     except PermissionError:
         fobj_out = open("serialmon_01.log","a")
-    fobj_out.write(time.strftime("%d.%m.%Y %H:%M") + ";" + line + "\r\n")
+    line = line.strip("$1;1;;")
+    fobj_out.write(time.strftime("%d.%m.%Y %H:00") + ";" + line + "\r\n")
     fobj_out.close()
     return
 

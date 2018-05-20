@@ -7,3 +7,5 @@ Wir sollten EMails versenden erst einmal zurückstellen, bis ich die Tragweite a
 
 20.05.2018  Wie kann ich im laufenden Programm den Cursor bedienen? Ich möchte die Messages nicht unten
 ansetzen sondern immer wieder überschreiben.
+
+Added Show actual Time

@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -u
-#!-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # 21.05.2018
 import time,smtplib,serial,sys,os
 

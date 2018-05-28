@@ -27,7 +27,7 @@ def serial_init():
 #   values = repr (line)   
    values = (line.split(b";"))  # Data is a bytes object !!! Therefore b
   return
-#------------------------------------------[analyze(line)]
+#------------------------------------------[analyse(line)]
 def analyse(line):
    global values
 

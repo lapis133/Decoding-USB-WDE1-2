@@ -137,10 +137,10 @@ def main():
     while True:
         if not ser.isOpen():
             serial_init()
-        schedule.run_pending()      # check clock
-        line = ser.readline()       # read line from WDE1
-        analyze(line)               # analyze
-        GPIO.output(led_grn, GPIO.LOW0)
+        schedule.run_pending()              # check clock
+        line = str(ser.readline(), "utf-8") # read line from WDE1
+        analyze()                           # analyze
+        GPIO.output(led_grn, GPIO.LOW)
         time.sleep(0.5)            
         GPIO.output(led_grn, GPIO.HIGH)
    

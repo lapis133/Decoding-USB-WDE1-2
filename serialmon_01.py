@@ -36,14 +36,14 @@ def analyse(line):
 #   values = repr (line)   
    values = (line.split(b";"))  # Data is a bytes object !!! Therefore b
    
-   print (b"Obergesch " + values[0] + b"°C  " + values[8] + b" %")
-  # print (b"Halle     " + values[1] + b"°C  " + values[9] + b" %")
-  # print (b"Schlafzi  " + values[2] + b" C  " + values[10] + b" %")
-  # print (b"Toilette  " + values[3] + b" C  " + values[11] + b" %")
-  # print (b"Badezi    " + values[4] + b" C  " + values[12] + b" %")
-  # print (b"Kueche    " + values[5] + b" C  " + values[13] + b" %")
-  # print (b"Heizung   " + values[6] + b" C  " + values[14] + b" %")
-  # print (b"Buero     " + values[7] + b" C  " + values[15] + b" %")
+   print (b"Obergesch " + values[0] + b"C  " + values[8] + b" %")
+   print (b"Halle     " + values[1] + b"°C  " + values[9] + b" %")
+   print (b"Schlafzi  " + values[2] + b" C  " + values[10] + b" %")
+   print (b"Toilette  " + values[3] + b" C  " + values[11] + b" %")
+   print (b"Badezi    " + values[4] + b" C  " + values[12] + b" %")
+   print (b"Kueche    " + values[5] + b" C  " + values[13] + b" %")
+   print (b"Heizung   " + values[6] + b" C  " + values[14] + b" %")
+   print (b"Buero     " + values[7] + b" C  " + values[15] + b" %")
    print ()
    return
 #--------------------------------------------[ End ]

@@ -97,7 +97,7 @@ def analyze():
     global line
 
     line = line.strip("$1;1;;")
-    log_info("received: " + line)
+    print("received: " + line)
     values = (line.split(";"))
     print("Obergeschoß  " + values[0] + "°C    " + values[ 8] + " %")
     print("Halle        " + values[1] + "°C    " + values[ 9] + " %")
@@ -124,7 +124,6 @@ def serial_init():
             GPIO.output(led_red, GPIO.LOW)
             return
         except SerialException:
-            log_info("Unable to open serial port " + port)
             GPIO.output(led_red, GPIO.LOW)
             time.sleep(0.5)            
             GPIO.output(led_red, GPIO.HIGH)

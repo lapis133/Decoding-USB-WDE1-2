@@ -25,6 +25,27 @@ port = '/dev/ttyUSB0'     # serial port of USB-WDE1
 values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 
+#----------------------------[log_info]
+def log_info(info):
+    print("[log] " + info)
+    try:
+        fobj_out = open("/var/log/serialmon_info.log","a")
+    except PermissionError:
+        fobj_out = open("serialmon_info.log","a")
+    fobj_out.write(time.strftime("%Y-%m-%d %H:%M:%S") + ": " + info + "\r\n")
+    fobj_out.close()
+    return
+
+#----------------------------[log_line]
+def log_line(line):
+    try:
+        fobj_out = open("/var/log/serialmon_01.log","a")
+    except PermissionError:
+        fobj_out = open("serialmon_01.log","a")
+    fobj_out.write(time.strftime("%d.%m.%Y %H:00") + ";" + line + "\r\n")
+    fobj_out.close()
+    return
+
 #----------------------------[send_mail]
 def send_mail():
     message = """Subject: e-mail from pi
@@ -41,15 +62,16 @@ def send_mail():
         passw = config["EMAIL"]["SMPT_PASSWORD"]
         dest  = config["EMAIL"]["DESTINATION_EMAIL"]
     except KeyError:
-        print ("serialmon_01.ini not filled")
+        log_info("serialmon_01.ini not filled")
         return
     try:
         server = smtplib.SMTP(host, port)
         server.login(email, passw)
         server.sendmail(email, dest, message)
         server.quit()
+        log_info("email send")
     except Exception:
-        print ("SMTP error")
+        log_info("SMTP error")
         return
         
     return
@@ -58,19 +80,14 @@ def send_mail():
 def once_a_hour():
     global line
 
-    print ("once_a_hour")
-    try:
-        fobj_out = open("/var/log/serialmon_01.log","a")
-    except PermissionError:
-        fobj_out = open("serialmon_01.log","a")
+    log_info("once_a_hour")
     line = line.strip("$1;1;;")
-    fobj_out.write(time.strftime("%d.%m.%Y %H:00") + ";" + line + "\r\n")
-    fobj_out.close()
+    log_line(line)
     return
 
 #----------------------------[once_a_day]
 def once_a_day():
-    print ("once_a_day")
+    log_info("once_a_day")
     send_mail()
     return
 
@@ -80,16 +97,16 @@ def analyze():
     global line
 
     line = line.strip("$1;1;;")
-    print (line)
+    log_info("received: " + line)
     values = (line.split(";"))
-    print ("Obergeschoß  " + values[0] + "°C    " + values[ 8] + " %")
-    print ("Halle        " + values[1] + "°C    " + values[ 9] + " %")
-    print ("Schlafzimmer " + values[2] + "°C    " + values[10] + " %")
-    print ("Toilette     " + values[3] + "°C    " + values[11] + " %")
-    print ("Badezimmer   " + values[4] + "°C    " + values[12] + " %")
-    print ("Küche        " + values[5] + "°C    " + values[13] + " %")
-    print ("Heizung      " + values[6] + "°C    " + values[14] + " %")
-    print ("Büro         " + values[7] + "°C    " + values[15] + " %")
+    print("Obergeschoß  " + values[0] + "°C    " + values[ 8] + " %")
+    print("Halle        " + values[1] + "°C    " + values[ 9] + " %")
+    print("Schlafzimmer " + values[2] + "°C    " + values[10] + " %")
+    print("Toilette     " + values[3] + "°C    " + values[11] + " %")
+    print("Badezimmer   " + values[4] + "°C    " + values[12] + " %")
+    print("Küche        " + values[5] + "°C    " + values[13] + " %")
+    print("Heizung      " + values[6] + "°C    " + values[14] + " %")
+    print("Büro         " + values[7] + "°C    " + values[15] + " %")
     return
 
 #----------------------------[serial_init]
@@ -102,12 +119,12 @@ def serial_init():
         schedule.run_pending()      # check clock
         try:
             ser = serial.Serial(port,9600)  # open serial line        
-            print ("connected: " + port)
+            log_info("connected: " + port)
             GPIO.output(led_grn, GPIO.HIGH)
             GPIO.output(led_red, GPIO.LOW)
             return
         except SerialException:
-            print ("Unable to open serial port " + port)
+            log_info("Unable to open serial port " + port)
             GPIO.output(led_red, GPIO.LOW)
             time.sleep(0.5)            
             GPIO.output(led_red, GPIO.HIGH)
@@ -127,6 +144,7 @@ def main():
     if len(sys.argv) == 2:
         if sys.argv[1] == "debug":
             run_test()
+            log_info("exit (debug)")
             GPIO.cleanup()
             return
 
@@ -147,7 +165,9 @@ def main():
 #----------------------------[]     
 if __name__=='__main__':
     try:
+        log_info("starting")
         main()
     except (SystemExit, KeyboardInterrupt):
+        log_info("exit")
         GPIO.cleanup()
     

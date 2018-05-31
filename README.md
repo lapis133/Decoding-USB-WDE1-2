@@ -10,7 +10,7 @@ $1;1; ;25,9; ;23,8;24,4;24,8;25,4;23,6;23,2;54; ;61;61;60;58;63;63; ; ; ; ; ;0
 sudo apt-get install python3-serial python3-rpi.gpio python3-pip
 sudo pip3 install schedule
 ```
-fill the variables in serialmon_01.ini
+for email notification fill the variables in serialmon_01.ini
 
 ### optional hardware layout
 http://rpi.science.uoit.ca/lab/gpio/
@@ -28,9 +28,8 @@ http://rpi.science.uoit.ca/lab/gpio/
 
 ## Installation
 ```
-sudo cp serialmon_01.ini /usr/local/etc
-sudo cp serialmon_01.py /usr/local/bin
-sudo chmod +x /usr/local/bin/serialmon_01.py
+sudo chmod +x install.sh
+run ./install.sh
 ```
 
 add in /etc/rc.local before the last line (exit 0):

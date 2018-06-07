@@ -11,19 +11,93 @@ import schedule
 import smtplib
 import serial
 from serial import SerialException
+import threading
+import socket
 import time
 import sys
 
+stop_thread = False;
+
+rel_out = 7
 led_grn = 12
 led_red = 16
+svr_red = 32
+svr_grn = 36
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(led_grn, GPIO.OUT)
 GPIO.setup(led_red, GPIO.OUT)
+GPIO.setup(svr_grn, GPIO.OUT)
+GPIO.setup(svr_red, GPIO.OUT)
+GPIO.setup(rel_out, GPIO.OUT)
 
 port = '/dev/ttyUSB0'     # serial port of USB-WDE1
 values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
+
+#----------------------------[clientdata]
+def clientdata(data):
+    if data == "rel_out=1":
+        log_info("<svr> rel_out=1")
+        GPIO.output(rel_out, GPIO.HIGH)
+    elif data == "rel_out=0":
+        log_info("<svr> rel_out=0")
+        GPIO.output(rel_out, GPIO.LOW)
+    else:
+        log_info("<svr> data: " + data)
+    return
+
+#----------------------------[serverthread]
+def serverthread():
+    log_info("<svr> init")
+    GPIO.output(svr_grn, GPIO.LOW)
+    GPIO.output(svr_red, GPIO.HIGH)
+    while True:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(("", 4711))
+            s.settimeout(1)
+            s.listen(1)
+            GPIO.output(svr_grn, GPIO.HIGH)
+            GPIO.output(svr_red, GPIO.LOW)
+            break
+        except Exception:
+            if stop_thread == True:
+                log_info("<svr> stop")
+                return
+            GPIO.output(svr_red, GPIO.LOW)
+            time.sleep(0.5)            
+            GPIO.output(svr_red, GPIO.HIGH)
+            time.sleep(5)
+
+    log_info("<svr> started")
+    while True:
+        try:
+            conn, addr = s.accept()
+            conn.settimeout(1)
+            log_info("<svr> connection accepted " + str(addr))
+            while True:
+                try:
+                    data = str(conn.recv(20), "utf-8")
+                    if not data: break
+                    clientdata(data)
+                except socket.timeout:
+                    GPIO.output(svr_grn, GPIO.LOW)
+                    time.sleep(0.5)            
+                    GPIO.output(svr_grn, GPIO.HIGH)
+                    if stop_thread == True:
+                        conn.close()
+                        s.close()
+                        log_info("<svr> stop")
+                        return
+            conn.close()
+            log_info("<svr> connection closed")
+        except socket.timeout:
+            if stop_thread == True:
+                s.close()
+                log_info("<svr> stop")
+                return
+    return
 
 #----------------------------[log_info]
 def log_info(info):
@@ -74,7 +148,6 @@ def send_mail():
     except Exception:
         log_info("SMTP error")
         return
-        
     return
 
 #----------------------------[once_a_hour]
@@ -125,6 +198,7 @@ def serial_init():
             GPIO.output(led_red, GPIO.LOW)
             return
         except SerialException:
+            print ("[dbg] unable to connect")
             GPIO.output(led_red, GPIO.LOW)
             time.sleep(0.5)            
             GPIO.output(led_red, GPIO.HIGH)
@@ -141,12 +215,17 @@ def main():
     global ser
     global line
 
+    GPIO.output(rel_out, GPIO.LOW)
+
     if len(sys.argv) == 2:
         if sys.argv[1] == "debug":
             run_test()
             log_info("exit (debug)")
             GPIO.cleanup()
             return
+
+    thread = threading.Thread(target=serverthread, args=[])
+    thread.start()
 
     schedule.every().day.at("08:00").do(once_a_day)
     schedule.every().hour.do(once_a_hour)    
@@ -168,6 +247,7 @@ if __name__=='__main__':
         log_info("starting")
         main()
     except:
+        stop_thread = True
         log_info("exit")
         GPIO.cleanup()
     

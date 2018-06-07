@@ -29,21 +29,21 @@ line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 def log_info(info):
     print("[log] " + info)
     try:
-        fobj_out = open("/var/log/serialmon_info.log","a")
+        f = open("/var/log/serialmon_info.log","a")
     except PermissionError:
-        fobj_out = open("serialmon_info.log","a")
-    fobj_out.write(time.strftime("%Y-%m-%d %H:%M:%S") + ": " + info + "\r\n")
-    fobj_out.close()
+        f = open("serialmon_info.log","a")
+    f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ": " + info + "\r\n")
+    f.close()
     return
 
 #----------------------------[log_line]
 def log_line(line):
     try:
-        fobj_out = open("/var/log/serialmon_01.log","a")
+        f = open("/var/log/serialmon_01.log","a")
     except PermissionError:
-        fobj_out = open("serialmon_01.log","a")
-    fobj_out.write(time.strftime("%d.%m.%Y %H:00") + ";" + line + "\r\n")
-    fobj_out.close()
+        f = open("serialmon_01.log","a")
+    f.write(time.strftime("%d.%m.%Y %H:00") + ";" + line + "\r\n")
+    f.close()
     return
 
 #----------------------------[send_mail]
@@ -66,6 +66,7 @@ def send_mail():
         return
     try:
         server = smtplib.SMTP(host, port)
+        server.starttls()
         server.login(email, passw)
         server.sendmail(email, dest, message)
         server.quit()
@@ -166,7 +167,7 @@ if __name__=='__main__':
     try:
         log_info("starting")
         main()
-    except (SystemExit, KeyboardInterrupt):
+    except:
         log_info("exit")
         GPIO.cleanup()
     

@@ -10,13 +10,14 @@ import datetime
 import schedule
 import smtplib
 import serial
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from serial import SerialException
 import threading
 import socket
 import time
 import sys
 
-stop_thread = False;
+rel_state = 0
 
 rel_out = 7
 led_grn = 12
@@ -32,71 +33,122 @@ GPIO.setup(svr_red, GPIO.OUT)
 GPIO.setup(rel_out, GPIO.OUT)
 
 port = '/dev/ttyUSB0'     # serial port of USB-WDE1
-values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 
-#----------------------------[clientdata]
-def clientdata(data):
-    if data == "rel_out=1":
-        log_info("<svr> rel_out=1")
-        GPIO.output(rel_out, GPIO.HIGH)
-    elif data == "rel_out=0":
-        log_info("<svr> rel_out=0")
-        GPIO.output(rel_out, GPIO.LOW)
-    else:
-        log_info("<svr> data: " + data)
-    return
+#----------------------------[MyServer]
+class RequestHandler(BaseHTTPRequestHandler):
+    def resp_header(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
 
+    def sendline(self, line):
+        self.wfile.write(bytes(line, "utf-8"))
+
+    def resp_page(self):
+        global values
+        global rel_state
+
+        self.sendline("<html>")
+        self.sendline("<head><title>home temperature observation</title></head>")
+        self.sendline("<body>")
+        self.sendline("<table>")
+        self.sendline("<tr>")
+        self.sendline("<th>Raum</th>")
+        self.sendline("<th>Temperatur</th>")
+        self.sendline("<th>Luftfeuchtigkeit</th>")
+        self.sendline("</tr>")
+        self.sendline("<tr>")
+        self.sendline("<td>Obergescho&szlig;</td>")
+        self.sendline("<td>{:d}&deg;C</td>".format(values[0]))
+        self.sendline("<td>{:d}%</td>".format(values[8]))
+        self.sendline("</tr>")
+        self.sendline("<tr>")
+        self.sendline("<td>Halle</td>")
+        self.sendline("<td>{:d}&deg;C</td>".format(values[1]))
+        self.sendline("<td>{:d}%</td>".format(values[9]))
+        self.sendline("</tr>")
+        self.sendline("<tr>")
+        self.sendline("<td>Schlafzimmer</td>")
+        self.sendline("<td>{:d}&deg;C</td>".format(values[2]))
+        self.sendline("<td>{:d}%</td>".format(values[10]))
+        self.sendline("</tr>")
+        self.sendline("<tr>")
+        self.sendline("<td>Toilette</td>")
+        self.sendline("<td>{:d}&deg;C</td>".format(values[3]))
+        self.sendline("<td>{:d}%</td>".format(values[11]))
+        self.sendline("</tr>")
+        self.sendline("<tr>")
+        self.sendline("<td>Badezimmer</td>")
+        self.sendline("<td>{:d}&deg;C</td>".format(values[4]))
+        self.sendline("<td>{:d}%</td>".format(values[12]))
+        self.sendline("</tr>")
+        self.sendline("<tr>")
+        self.sendline("<td>K&uuml;che</td>")
+        self.sendline("<td>{:d}&deg;C</td>".format(values[5]))
+        self.sendline("<td>{:d}%</td>".format(values[13]))
+        self.sendline("</tr>")
+        self.sendline("<tr>")
+        self.sendline("<td>Heizung</td>")
+        self.sendline("<td>{:d}&deg;C</td>".format(values[6]))
+        self.sendline("<td>{:d}%</td>".format(values[14]))
+        self.sendline("</tr>")
+        self.sendline("<tr>")
+        self.sendline("<td>B&uuml;ro</td>")
+        self.sendline("<td>{:d}&deg;C</td>".format(values[7]))
+        self.sendline("<td>{:d}%</td>".format(values[15]))
+        self.sendline("</tr>")
+        self.sendline("</table>")
+        if rel_state == 1:
+            self.sendline("Heizung ist ein<br>")
+        else:
+            self.sendline("Heizung ist aus<br>")
+        self.sendline("<form action='' method='post'><button name='foo' value='upvote'>Upvote</button></form>")
+        self.sendline("</body>")
+
+    def do_GET(self):
+        log_info("<svr> do_GET")
+        self.resp_header()
+        self.resp_page()
+
+    def do_POST(self):
+        global rel_state
+
+        log_info("<svr> do_POST")
+        if rel_state == 1:
+            rel_state = 0
+        else:
+            rel_state = 1
+        self.resp_header()
+        self.resp_page()
+    
 #----------------------------[serverthread]
 def serverthread():
+    global hsvr
+
     log_info("<svr> init")
     GPIO.output(svr_grn, GPIO.LOW)
     GPIO.output(svr_red, GPIO.HIGH)
+
     while True:
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.bind(("", 4711))
-            s.settimeout(1)
-            s.listen(1)
-            GPIO.output(svr_grn, GPIO.HIGH)
-            GPIO.output(svr_red, GPIO.LOW)
+            hsvr = HTTPServer(("", 4711), RequestHandler)
             break
         except Exception:
-            if stop_thread == True:
-                log_info("<svr> stop")
-                return
             GPIO.output(svr_red, GPIO.LOW)
             time.sleep(0.5)            
             GPIO.output(svr_red, GPIO.HIGH)
-            time.sleep(5)
+            time.sleep(1)
 
     log_info("<svr> started")
-    while True:
-        try:
-            conn, addr = s.accept()
-            conn.settimeout(1)
-            log_info("<svr> connection accepted " + str(addr))
-            while True:
-                try:
-                    data = str(conn.recv(20), "utf-8")
-                    if not data: break
-                    clientdata(data)
-                except socket.timeout:
-                    GPIO.output(svr_grn, GPIO.LOW)
-                    time.sleep(0.5)            
-                    GPIO.output(svr_grn, GPIO.HIGH)
-                    if stop_thread == True:
-                        conn.close()
-                        s.close()
-                        log_info("<svr> stop")
-                        return
-            conn.close()
-            log_info("<svr> connection closed")
-        except socket.timeout:
-            if stop_thread == True:
-                s.close()
-                log_info("<svr> stop")
-                return
+    GPIO.output(svr_grn, GPIO.HIGH)
+    GPIO.output(svr_red, GPIO.LOW)
+    try:
+        hsvr.serve_forever()
+    except KeyboardInterrupt:
+        hsvr.server_close()
+    log_info("<svr> stop")
     return
 
 #----------------------------[log_info]
@@ -124,8 +176,8 @@ def log_line(line):
 def send_mail():
     message = """Subject: e-mail from pi
 
-    %s
-    """ % (values)
+    {:s}
+    """.format(str(values))
 
     config = configparser.ConfigParser()
     config.read('/usr/local/etc/serialmon_01.ini')
@@ -139,11 +191,11 @@ def send_mail():
         log_info("serialmon_01.ini not filled")
         return
     try:
-        server = smtplib.SMTP(host, port)
-        server.starttls()
-        server.login(email, passw)
-        server.sendmail(email, dest, message)
-        server.quit()
+        s = smtplib.SMTP(host, port)
+        s.starttls()
+        s.login(email, passw)
+        s.sendmail(email, dest, message)
+        s.quit()
         log_info("email send")
     except Exception:
         log_info("SMTP error")
@@ -186,11 +238,19 @@ def analyze():
 #----------------------------[serial_init]
 def serial_init():
     global ser
+    global rel_out
+
     GPIO.output(led_grn, GPIO.LOW)
     GPIO.output(led_red, GPIO.HIGH)
     while True:
         line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
         schedule.run_pending()      # check clock
+
+        if rel_state == 1:
+            GPIO.output(rel_out, GPIO.HIGH)
+        else:
+            GPIO.output(rel_out, GPIO.LOW)
+
         try:
             ser = serial.Serial(port,9600)  # open serial line        
             log_info("connected: " + port)
@@ -214,6 +274,7 @@ def run_test():
 def main():
     global ser
     global line
+    global rel_state
 
     GPIO.output(rel_out, GPIO.LOW)
 
@@ -228,7 +289,7 @@ def main():
     thread.start()
 
     schedule.every().day.at("08:00").do(once_a_day)
-    schedule.every().hour.do(once_a_hour)    
+    schedule.every().hour.do(once_a_hour)
     serial_init()
 
     while True:
@@ -240,14 +301,19 @@ def main():
         GPIO.output(led_grn, GPIO.LOW)
         time.sleep(0.5)            
         GPIO.output(led_grn, GPIO.HIGH)
+        if rel_state == 1:
+            GPIO.output(rel_out, GPIO.HIGH)
+        else:
+            GPIO.output(rel_out, GPIO.LOW)
    
 #----------------------------[]     
 if __name__=='__main__':
+    global hsvr
     try:
         log_info("starting")
         main()
     except:
-        stop_thread = True
-        log_info("exit")
         GPIO.cleanup()
+        hsvr.server_close()
+        log_info("exit")
     

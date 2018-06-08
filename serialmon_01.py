@@ -171,16 +171,16 @@ def analyze():
     global line
 
     line = line.strip("$1;1;;")
-    print("received: " + line)
+   # print("received: " + line)
     values = (line.split(";"))
-    print("Obergeschoß  " + values[0] + "°C    " + values[ 8] + " %")
-    print("Halle        " + values[1] + "°C    " + values[ 9] + " %")
-    print("Schlafzimmer " + values[2] + "°C    " + values[10] + " %")
-    print("Toilette     " + values[3] + "°C    " + values[11] + " %")
-    print("Badezimmer   " + values[4] + "°C    " + values[12] + " %")
-    print("Küche        " + values[5] + "°C    " + values[13] + " %")
-    print("Heizung      " + values[6] + "°C    " + values[14] + " %")
-    print("Büro         " + values[7] + "°C    " + values[15] + " %")
+    print("Obergeschoß  " + values[0] + " °C    " + values[ 8] + " %")
+    print("Halle        " + values[1] + " °C    " + values[ 9] + " %")
+    print("Schlafzimmer " + values[2] + " °C    " + values[10] + " %")
+    print("Toilette     " + values[3] + " °C    " + values[11] + " %")
+    print("Badezimmer   " + values[4] + " °C    " + values[12] + " %")
+    print("Küche        " + values[5] + " °C    " + values[13] + " %")
+    print("Heizung      " + values[6] + " °C    " + values[14] + " %")
+    print("Büro         " + values[7] + " °C    " + values[15] + " %")
     return
 
 #----------------------------[serial_init]

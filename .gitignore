@@ -89,7 +89,9 @@ ENV/
 
 # Spyder project settings
 .spyderproject
-.spyproject
+.spyproject# VS
+.json
+.vscode
 
 # Rope project settings
 .ropeproject
@@ -99,3 +101,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# VS
+.json
+.vscode

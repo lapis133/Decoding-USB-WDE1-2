@@ -5,16 +5,27 @@ $1;1; ;25,9; ;23,8;24,4;24,8;25,4;23,6;23,2;54; ;61;61;60;58;63;63; ; ; ; ; ;0
 ```
 Programm logging is found in /var/log/serialmon_info.log and the received lines in /var/log/serialmon_01.log
 
-To set or unset the relais:
-```
-echo -n "rel_out=1" | nc 127.0.0.1 4711
-echo -n "rel_out=0" | nc 127.0.0.1 4711
-```
-
 ## Preparation
 ```
 sudo apt-get install python3-serial python3-rpi.gpio python3-pip
 sudo pip3 install schedule
+```
+## Running
+```
+python3 serialmon_01.py
+```
+or
+```
+python3 serialmon_01.py debug
+```
+or
+```
+python3 serialmon_01.py fakeval
+```
+If already "installed" execute this before running from console:
+```
+ps -aux | grep  python3 /usr/local/bin/serialmon_01.py
+sudo kill xxx
 ```
 
 ### optional hardware layout
@@ -38,7 +49,7 @@ http://rpi.science.uoit.ca/lab/gpio/
 ## Installation
 ```
 sudo chmod +x install.sh
-run ./install.sh
+./install.sh
 ```
 for email notification fill the variables in /usr/local/etc/serialmon_01.ini
 

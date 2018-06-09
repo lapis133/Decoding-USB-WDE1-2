@@ -39,7 +39,7 @@ line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 def showtime():
     global lt
     lt = time.localtime()
-    print (time.strftime("%d,%m,%Y Time: %H,%M,%S",lt))
+    print (time.strftime("%d-%m-%Y Time: %H:%M:%S",lt))
     print()
     return
 

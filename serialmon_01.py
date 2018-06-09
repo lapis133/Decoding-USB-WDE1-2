@@ -181,7 +181,9 @@ def analyze():
     print("Küche        " + values[5] + " °C    " + values[13] + " %")
     print("Heizung      " + values[6] + " °C    " + values[14] + " %")
     print("Büro         " + values[7] + " °C    " + values[15] + " %")
+    print()
     return
+    
 
 #----------------------------[serial_init]
 def serial_init():

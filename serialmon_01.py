@@ -33,8 +33,10 @@ GPIO.setup(svr_red, GPIO.OUT)
 GPIO.setup(rel_out, GPIO.OUT)
 
 port = '/dev/ttyUSB0'     # serial port of USB-WDE1
-values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
+line = "$1;1;;2,1;2,2;3,3;4,4;5,5;6,6;7,7;8,8;9,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7"
+line = line.strip("$1;1;;")
+values = (line.split(";"))
+diff = [ "?", "?", "?", "?", "?", "?", "?", "?"]
 
 #----------------------------[MyServer]
 class RequestHandler(BaseHTTPRequestHandler):
@@ -52,59 +54,24 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         self.sendline("<html>")
         self.sendline("<head><title>home temperature observation</title></head>")
-        self.sendline("<body>")
+        self.sendline("<body><font face='verdana,arial'>")
         self.sendline("<table>")
-        self.sendline("<tr>")
-        self.sendline("<th>Raum</th>")
-        self.sendline("<th>Temperatur</th>")
-        self.sendline("<th>Luftfeuchtigkeit</th>")
-        self.sendline("</tr>")
-        self.sendline("<tr>")
-        self.sendline("<td>Obergescho&szlig;</td>")
-        self.sendline("<td>{:d}&deg;C</td>".format(values[0]))
-        self.sendline("<td>{:d}%</td>".format(values[8]))
-        self.sendline("</tr>")
-        self.sendline("<tr>")
-        self.sendline("<td>Halle</td>")
-        self.sendline("<td>{:d}&deg;C</td>".format(values[1]))
-        self.sendline("<td>{:d}%</td>".format(values[9]))
-        self.sendline("</tr>")
-        self.sendline("<tr>")
-        self.sendline("<td>Schlafzimmer</td>")
-        self.sendline("<td>{:d}&deg;C</td>".format(values[2]))
-        self.sendline("<td>{:d}%</td>".format(values[10]))
-        self.sendline("</tr>")
-        self.sendline("<tr>")
-        self.sendline("<td>Toilette</td>")
-        self.sendline("<td>{:d}&deg;C</td>".format(values[3]))
-        self.sendline("<td>{:d}%</td>".format(values[11]))
-        self.sendline("</tr>")
-        self.sendline("<tr>")
-        self.sendline("<td>Badezimmer</td>")
-        self.sendline("<td>{:d}&deg;C</td>".format(values[4]))
-        self.sendline("<td>{:d}%</td>".format(values[12]))
-        self.sendline("</tr>")
-        self.sendline("<tr>")
-        self.sendline("<td>K&uuml;che</td>")
-        self.sendline("<td>{:d}&deg;C</td>".format(values[5]))
-        self.sendline("<td>{:d}%</td>".format(values[13]))
-        self.sendline("</tr>")
-        self.sendline("<tr>")
-        self.sendline("<td>Heizung</td>")
-        self.sendline("<td>{:d}&deg;C</td>".format(values[6]))
-        self.sendline("<td>{:d}%</td>".format(values[14]))
-        self.sendline("</tr>")
-        self.sendline("<tr>")
-        self.sendline("<td>B&uuml;ro</td>")
-        self.sendline("<td>{:d}&deg;C</td>".format(values[7]))
-        self.sendline("<td>{:d}%</td>".format(values[15]))
-        self.sendline("</tr>")
-        self.sendline("</table>")
+        self.sendline("<tr><th>Raum</th><th>Temperatur</th><th>Luftfeuchtigkeit</th></tr>")
+        self.sendline("<tr><td>Obergescho&szlig;</td><td>{:d}&deg;C</td><td>{:d}%</td></tr>".format(values[0], values[8]))
+        self.sendline("<tr><td>Halle            </td><td>{:d}&deg;C</td><td>{:d}%</td></tr>".format(values[1], values[0]))
+        self.sendline("<tr><td>Schlafzimmer     </td><td>{:d}&deg;C</td><td>{:d}%</td></tr>".format(values[2], values[10]))
+        self.sendline("<tr><td>Toilette         </td><td>{:d}&deg;C</td><td>{:d}%</td></tr>".format(values[3], values[11]))
+        self.sendline("<tr><td>Badezimmer       </td><td>{:d}&deg;C</td><td>{:d}%</td></tr>".format(values[4], values[12]))
+        self.sendline("<tr><td>K&uuml;che       </td><td>{:d}&deg;C</td><td>{:d}%</td></tr>".format(values[5], values[13]))
+        self.sendline("<tr><td>Heizung          </td><td>{:d}&deg;C</td><td>{:d}%</td></tr>".format(values[6], values[14]))
+        self.sendline("<tr><td>B&uuml;ro        </td><td>{:d}&deg;C</td><td>{:d}%</td></tr>".format(values[7], values[15]))
+        self.sendline("</table><p>")
         if rel_state == 1:
             self.sendline("Heizung ist ein<br>")
+            self.sendline("<form action='' method='post'><button name='foo' value='upvote'>Heizung aus</button></form>")
         else:
             self.sendline("Heizung ist aus<br>")
-        self.sendline("<form action='' method='post'><button name='foo' value='upvote'>Upvote</button></form>")
+            self.sendline("<form action='' method='post'><button name='foo' value='upvote'>Heizung ein</button></form>")
         self.sendline("</body>")
 
     def do_GET(self):
@@ -174,10 +141,29 @@ def log_line(line):
 
 #----------------------------[send_mail]
 def send_mail():
-    message = """Subject: e-mail from pi
+    global values
 
-    {:s}
-    """.format(str(values))
+    message = """From: PI
+    Subject: e-mail from pi
+
+    Obergeschoß  {:>5s}°C {:>5s}%  {:s}
+    Halle        {:>5s}°C {:>5s}%  {:s}
+    Schlafzimmer {:>5s}°C {:>5s}%  {:s}
+    Toilette     {:>5s}°C {:>5s}%  {:s}
+    Badezimmer   {:>5s}°C {:>5s}%  {:s}
+    Küche        {:>5s}°C {:>5s}%  {:s}
+    Heizung      {:>5s}°C {:>5s}%  {:s}
+    Büro         {:>5s}°C {:>5s}%  {:s}
+    """.format(values[0], values[8], diff[0],
+               values[1], values[9], diff[1],
+               values[2], values[10], diff[2],
+               values[3], values[11], diff[3],
+               values[4], values[12], diff[4],
+               values[5], values[13], diff[5],
+               values[6], values[14], diff[6],
+               values[7], values[15], diff[7])
+
+    log_info("send: " + message)
 
     config = configparser.ConfigParser()
     config.read('/usr/local/etc/serialmon_01.ini')
@@ -275,18 +261,21 @@ def main():
     global ser
     global line
     global rel_state
+    global hsvr
 
     GPIO.output(rel_out, GPIO.LOW)
 
+    thread = threading.Thread(target=serverthread, args=[])
+    thread.start()
+
     if len(sys.argv) == 2:
         if sys.argv[1] == "debug":
+            time.sleep(2)
             run_test()
+            hsvr.shutdown()
             log_info("exit (debug)")
             GPIO.cleanup()
             return
-
-    thread = threading.Thread(target=serverthread, args=[])
-    thread.start()
 
     schedule.every().day.at("08:00").do(once_a_day)
     schedule.every().hour.do(once_a_hour)
@@ -314,6 +303,6 @@ if __name__=='__main__':
         main()
     except:
         GPIO.cleanup()
-        hsvr.server_close()
+        hsvr.shutdown()
         log_info("exit")
     

@@ -131,9 +131,10 @@ def log_line(line):
 #----------------------------[send_mail]
 def send_mail():
     message = """Subject: e-mail from pi
-    analyze()
+   
     %s
     """ % (values)
+    analyze()
 
     config = configparser.ConfigParser()
     config.read('/usr/local/etc/serialmon_01.ini')

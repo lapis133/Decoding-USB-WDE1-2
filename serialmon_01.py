@@ -131,7 +131,7 @@ def log_line(line):
 #----------------------------[send_mail]
 def send_mail():
     message = """Subject: e-mail from pi
-
+    analyze()
     %s
     """ % (values)
 

@@ -35,6 +35,14 @@ port = '/dev/ttyUSB0'     # serial port of USB-WDE1
 values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 
+#----------------------------[showtime]
+def showtime():
+    global lt
+    lt = time.localtime()
+    print (time.strftime("%d,%m,%Y Time: %H,%M,%S",lt))
+    print()
+    return
+
 #----------------------------[clientdata]
 def clientdata(data):
     if data == "rel_out=1":
@@ -173,6 +181,7 @@ def analyze():
     line = line.strip("$1;1;;")
    # print("received: " + line)
     values = (line.split(";"))
+    showtime()
     print("Obergeschoß  " + values[0] + " °C    " + values[ 8] + " %")
     print("Halle        " + values[1] + " °C    " + values[ 9] + " %")
     print("Schlafzimmer " + values[2] + " °C    " + values[10] + " %")
@@ -183,7 +192,7 @@ def analyze():
     print("Büro         " + values[7] + " °C    " + values[15] + " %")
     print()
     return
-    
+
 
 #----------------------------[serial_init]
 def serial_init():

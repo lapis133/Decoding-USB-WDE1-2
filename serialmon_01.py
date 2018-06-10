@@ -80,8 +80,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         global rel_state
 
         self.senddata("<html>")
-        self.senddata("<head><title>home temperature observation</title></head>")
+        self.senddata("<head><title>home temperature observation</title><meta http-equiv='refresh' content='5'></head>")
         self.senddata("<body><font face='verdana,arial'>")
+        self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
         self.senddata(gethtmltable())
         if rel_state == 1:
             self.senddata("<form action='' method='post'><button name='foo' value='upvote'>Heizung aus</button></form>")

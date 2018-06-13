@@ -339,7 +339,7 @@ def main():
 
     # init
     #schedule.every().day.at("08:00").do(once_a_day)    #   Mail once an hour
-    schedule.every().hour.do(once_a_day)
+    #schedule.every().hour.do(once_a_day)
     schedule.every().hour.do(once_a_hour)
     serial_init()
 

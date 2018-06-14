@@ -227,6 +227,9 @@ def once_a_day():
 
     # calculate diff
     for i in range(16):
+        if lval == "?":
+            lval[i] == values[i]
+
         if   values[i] == "?":
             diff[i] = "-"
             hcode[i] = "-"
@@ -240,7 +243,7 @@ def once_a_day():
             diff[i] = "●"
             hcode[i] = "&#9679;"
     lval = values
-
+    print("cal end")
     # send mail
     send_mail()
     return

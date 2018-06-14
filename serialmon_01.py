@@ -227,8 +227,8 @@ def once_a_day():
 
     # calculate diff
     for i in range(16):
-        if lval == "?":
-            lval[i] == values[i]
+        if lval[i] == "?":
+            lval[i] = values[i]
 
         if   values[i] == "?":
             diff[i] = "-"

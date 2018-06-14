@@ -226,23 +226,23 @@ def once_a_day():
     log_info("once_a_day")
 
     # calculate diff
-    for i in range(16):
-        if lval[i] == "?":
-            lval[i] = values[i]
+#   for i in range(16):
+ #       if lval[i] == "?":
+ #           lval[i] = values[i]
 
-        if   values[i] == "?":
-            diff[i] = "-"
-            hcode[i] = "-"
-        elif float(values[i]) > float(lval[i]):
-            diff[i] = "▲"
-            hcode[i] = "&#9652;"
-        elif float(values[i]) < float(lval[i]):
-            diff[i] = "▼"
-            hcode[i] = "&#9662;"
-        else:
-            diff[i] = "●"
-            hcode[i] = "&#9679;"
-    lval = values
+#        if   values[i] == "?":
+#            diff[i] = "-"
+#            hcode[i] = "-"
+#        elif float(values[i]) > float(lval[i]):
+#            diff[i] = "▲"
+#            hcode[i] = "&#9652;"
+#        elif float(values[i]) < float(lval[i]):
+#            diff[i] = "▼"
+#            hcode[i] = "&#9662;"
+ #       else:
+ #           diff[i] = "●"
+ #           hcode[i] = "&#9679;"
+#    lval = values
     print("cal end")
     # send mail
     send_mail()

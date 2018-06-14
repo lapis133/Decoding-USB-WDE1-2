@@ -221,20 +221,24 @@ def once_a_day():
     global lval
     global hcode
     global diff
+    global values
 
     log_info("once_a_day")
 
     # calculate diff
     for i in range(16):
+        if lval[i] == "?":
+            lval[i] = values[i]
+
         if   values[i] == "?":
             diff[i] = "-"
             hcode[i] = "-"
         elif float(values[i]) > float(lval[i]):
             diff[i] = "▲"
-            hcode[i] = "&#9652;"
+            hcode[i] = "&#9650;"
         elif float(values[i]) < float(lval[i]):
             diff[i] = "▼"
-            hcode[i] = "&#9662;"
+            hcode[i] = "&#9660;"
         else:
             diff[i] = "●"
             hcode[i] = "&#9679;"
@@ -335,6 +339,7 @@ def main():
             analyze()
             once_a_hour()
             once_a_day()
+            analyze()
 
     # init
     schedule.every().day.at("08:00").do(once_a_day)

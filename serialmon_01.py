@@ -221,6 +221,7 @@ def once_a_day():
     global lval
     global hcode
     global diff
+    global values
 
     log_info("once_a_day")
 
@@ -338,8 +339,8 @@ def main():
             once_a_day()
 
     # init
-    schedule.every().day.at("08:00").do(once_a_day)    #   Mail once an hour
-    #schedule.every().hour.do(once_a_day)
+    #schedule.every().day.at("08:00").do(once_a_day)    #   Mail once an hour
+    schedule.every().hour.do(once_a_day)
     schedule.every().hour.do(once_a_hour)
     serial_init()
 

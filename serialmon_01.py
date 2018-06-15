@@ -301,7 +301,7 @@ def serial_init():
             time.sleep(5)
 
 #----------------------------[run_test]
- def run_test():
+def run_test():
 +    global line 
 +    global lval
 +

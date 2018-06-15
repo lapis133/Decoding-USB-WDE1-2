@@ -302,26 +302,26 @@ def serial_init():
 
 #----------------------------[run_test]
 def run_test():
-+    global line 
-+    global lval
-+
-+    # check line with ?
-+    analyze()
-+    once_a_hour()
-+    once_a_day()
-+    # check received line
-+    line = "$1;1;;10,1;20,2;30,3;40,4;50,5;60,6;70,7;80,8;90,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7"
+    global line 
+    global lval
+
+    # check line with ?
+    analyze()
+    once_a_hour()
+    once_a_day()
+    # check received line
+    line = "$1;1;;10,1;20,2;30,3;40,4;50,5;60,6;70,7;80,8;90,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7"
      analyze()
      once_a_hour()
      once_a_day()
-+    # check diffs
-+    lval = list(values)
-+    lval[0] = "8.8"
-+    lval[1] = "22.5"
-+    once_a_hour()
-+    once_a_day()
-+    analyze()
-+    return
+    # check diffs
+    lval = list(values)
+    lval[0] = "8.8"
+    lval[1] = "22.5"
+    once_a_hour()
+    once_a_day()
+    analyze()
+    return
 
 #----------------------------[main]
 def main():

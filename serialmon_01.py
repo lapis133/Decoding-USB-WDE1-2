@@ -39,9 +39,9 @@ line = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 line = line.replace("$1;1;;", "")
 line = line.replace(',', '.')
 values = line.split(";")
-lval = values
-diff = [ "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?"]
-hcode = [ "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?"]
+lval = list(values)         # last values
+diff = list(values)         # diffs
+hcode = list(values)        # html diff
 
 #----------------------------[gethtmltable]
 def gethtmltable():
@@ -226,23 +226,23 @@ def once_a_day():
     log_info("once_a_day")
 
     # calculate diff
-#   for i in range(16):
- #       if lval[i] == "?":
- #           lval[i] = values[i]
+   for i in range(16):
+        if lval[i] == "?":
+            lval[i] = values[i]
 
-#        if   values[i] == "?":
-#            diff[i] = "-"
-#            hcode[i] = "-"
-#        elif float(values[i]) > float(lval[i]):
-#            diff[i] = "▲"
-#            hcode[i] = "&#9652;"
-#        elif float(values[i]) < float(lval[i]):
-#            diff[i] = "▼"
-#            hcode[i] = "&#9662;"
- #       else:
- #           diff[i] = "●"
- #           hcode[i] = "&#9679;"
-#    lval = values
+        if   values[i] == "?":
+            diff[i] = "-"
+            hcode[i] = "-"
+        elif float(values[i]) > float(lval[i]):
+            diff[i] = "▲"
+            hcode[i] = "&#9650;"
+        elif float(values[i]) < float(lval[i]):
+            diff[i] = "▼"
+            hcode[i] = "&#9660;"
+        else:
+            diff[i] = "●"
+            hcode[i] = "&#9679;"
+    lval = list(values)
     print("cal end")
     # send mail
     send_mail()
@@ -288,8 +288,8 @@ def serial_init():
             GPIO.output(rel_out, GPIO.LOW)
 
         try:
-            ser = serial.Serial(port,9600)
-            log_info("connected: " + port)
+            ser = serial.Serial("/dev/ttyUSB0",9600)
+            log_info("usb connected")
             GPIO.output(led_grn, GPIO.HIGH)
             GPIO.output(led_red, GPIO.LOW)
             return
@@ -301,10 +301,27 @@ def serial_init():
             time.sleep(5)
 
 #----------------------------[run_test]
-def run_test():
-    analyze()
-    once_a_hour()
-    once_a_day()
+ def run_test():
++    global line 
++    global lval
++
++    # check line with ?
++    analyze()
++    once_a_hour()
++    once_a_day()
++    # check received line
++    line = "$1;1;;10,1;20,2;30,3;40,4;50,5;60,6;70,7;80,8;90,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7"
+     analyze()
+     once_a_hour()
+     once_a_day()
++    # check diffs
++    lval = list(values)
++    lval[0] = "8.8"
++    lval[1] = "22.5"
++    once_a_hour()
++    once_a_day()
++    analyze()
++    return
 
 #----------------------------[main]
 def main():
@@ -331,10 +348,8 @@ def main():
             return
         if sys.argv[1] == "fakeval":
             line = "$1;1;;10,1;20,2;30,3;40,4;50,5;60,6;70,7;80,8;90,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7"
-            line = line.replace("$1;1;;", "")
-            line = line.replace(',', '.')
-            values = line.split(";")
-            lval = values
+            analyze()
+            lval = list(values)
             lval[0] = "8.8"
             lval[1] = "22.5"
             analyze()

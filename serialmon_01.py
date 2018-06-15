@@ -226,7 +226,7 @@ def once_a_day():
     log_info("once_a_day")
 
     # calculate diff
-   for i in range(16):
+    for i in range(16):
         if lval[i] == "?":
             lval[i] = values[i]
 

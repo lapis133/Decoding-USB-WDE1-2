@@ -4,13 +4,32 @@ import pickle
 import dht22 as DHT
 import time
 
+#----------------------------[writearray]
+def writearray(array):
+    try:
+        with open("/usr/local/etc/serialmon_01.pic", 'wb') as fp:
+            pickle.dump(array, fp)
+        return
+    except OSError:
+        pass
+    try:
+        with open("serialmon_01.pic", 'wb') as fp:
+            pickle.dump(array, fp)
+        return
+    except OSError:
+        pass
+    return
+
 #----------------------------[main]
 def main():
+    array = [ "?", "?"]
     while True:
         humidity, temperature = DHT.read_retry(DHT.DHT22, 10)
-        print (humidity)
-        print (temperature)
-        time.sleep(5)
+        array[0] = str(humidity)
+        array[1] = str(temperature)
+        print (array)
+        writearray(array)
+        time.sleep(60)
 
 #----------------------------[]
 if __name__=='__main__':

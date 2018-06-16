@@ -39,7 +39,6 @@ values = line.split(";")
 lval   = list(values) # last vulues
 diff   = list(values) # diffs
 hcode  = list(values) # html diff
-dht22  = [ "?", "?" ]
 
 #----------------------------[readdht22]
 def readdht22():
@@ -59,7 +58,7 @@ def readdht22():
         with open ("serialmon_01.pic", 'rb') as fp:
             array = pickle.load(fp)
         try:
-            os.remove("/usr/local/etc/serialmon_01.pic")
+            os.remove("serialmon_01.pic")
         except OSError:
             pass
         return array
@@ -279,6 +278,9 @@ def analyze():
     global line
     global diff
 
+    # readdht
+    dht22 = readdht22()
+
     # format and split
     line = line.replace("$1;1;;", "")
     line = line.replace(',', '.')
@@ -328,9 +330,9 @@ def serial_init():
 def run_test():
     global line
     global lval
-    global dht22
 
     dht22 = readdht22()
+    print (dht22)
 
     # check line with ?
     analyze()
@@ -358,9 +360,6 @@ def main():
     global lval
     global rel_state
     global hsvr
-    global dht22
-
-    dht22 = readdht22()
 
     GPIO.output(rel_out, GPIO.LOW)
 
@@ -405,7 +404,6 @@ def main():
             GPIO.output(rel_out, GPIO.HIGH)
         else:
             GPIO.output(rel_out, GPIO.LOW)
-        dht22 = readdht22()
 
 #----------------------------[]
 if __name__=='__main__':

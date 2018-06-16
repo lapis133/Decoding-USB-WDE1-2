@@ -50,7 +50,7 @@ def gethtmltable():
     global rel_state
 
     html  = "<table>"
-    html += "<tr align='left'><th>Raum</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchtigkeit</th></tr>"
+    html += "<tr align='left'><th>Raum</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchte</th></tr>"
     html += "<tr><td>Obergescho&szlig;&nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[0], hcode[0], values[ 8], hcode[ 8])
     html += "<tr><td>Halle            &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[1], hcode[1], values[ 9], hcode[ 9])
     html += "<tr><td>Schlafzimmer     &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[2], hcode[2], values[10], hcode[10])
@@ -243,7 +243,7 @@ def once_a_day():
             diff[i] = "●"
             hcode[i] = "&#9679;"
     lval = list(values)
-    print("cal end")
+    print("done diff")
     # send mail
     send_mail()
     return
@@ -261,7 +261,8 @@ def analyze():
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
-    print("Obergeschoß  " + values[0] + "°C " + diff[0] + "   " + values[ 8] + " % " + diff[ 8])
+    print("Obergeschoß  " + values[0] + " °C + "   " + values[ 8] + " % " )
+#    print("Obergeschoß  " + values[0] + "°C " + diff[0] + "   " + values[ 8] + " % " + diff[ 8])
     print("Halle        " + values[1] + "°C " + diff[1] + "   " + values[ 9] + " % " + diff[ 9])
     print("Schlafzimmer " + values[2] + "°C " + diff[2] + "   " + values[10] + " % " + diff[10])
     print("Toilette     " + values[3] + "°C " + diff[3] + "   " + values[11] + " % " + diff[11])

@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-try:
-    import RPi.GPIO as GPIO
-except ImportError:
-    import gpio as GPIO
+import gpio as GPIO
+import dht22 as DHT
 import configparser
 import datetime
 import schedule
@@ -34,7 +32,6 @@ GPIO.setup(svr_grn, GPIO.OUT)
 GPIO.setup(svr_red, GPIO.OUT)
 GPIO.setup(rel_out, GPIO.OUT)
 
-port   = "/dev/ttyUSB0"
 line   = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 line   = line.replace("$1;1;;", "")
 line   = line.replace(',', '.')
@@ -105,7 +102,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             rel_state = 1
         self.resp_header()
         self.resp_page()
-    
+
 #----------------------------[serverthread]
 def serverthread():
     global hsvr
@@ -121,7 +118,7 @@ def serverthread():
             break
         except Exception:
             GPIO.output(svr_red, GPIO.LOW)
-            time.sleep(0.5)            
+            time.sleep(0.5)
             GPIO.output(svr_red, GPIO.HIGH)
             time.sleep(1)
 
@@ -295,13 +292,13 @@ def serial_init():
         except SerialException:
             print ("[dbg] unable to connect")
             GPIO.output(led_red, GPIO.LOW)
-            time.sleep(0.5)            
+            time.sleep(0.5)
             GPIO.output(led_red, GPIO.HIGH)
             time.sleep(5)
 
 #----------------------------[run_test]
 def run_test():
-    global line 
+    global line
     global lval
 
     # check line with ?
@@ -332,6 +329,10 @@ def main():
     global hsvr
 
     GPIO.output(rel_out, GPIO.LOW)
+
+    humidity, temperature = DHT.read_retry(DHT.DHT22, 10)
+    print (humidity)
+    print (temperature)
 
     thread = threading.Thread(target=serverthread, args=[])
     thread.start()
@@ -368,14 +369,14 @@ def main():
         line = str(ser.readline(), "utf-8")
         analyze()
         GPIO.output(led_grn, GPIO.LOW)
-        time.sleep(0.5)            
+        time.sleep(0.5)
         GPIO.output(led_grn, GPIO.HIGH)
         if rel_state == 1:
             GPIO.output(rel_out, GPIO.HIGH)
         else:
             GPIO.output(rel_out, GPIO.LOW)
-   
-#----------------------------[]     
+
+#----------------------------[]
 if __name__=='__main__':
     global hsvr
     try:
@@ -385,4 +386,3 @@ if __name__=='__main__':
         GPIO.cleanup()
         hsvr.shutdown()
         log_info("exit")
-    

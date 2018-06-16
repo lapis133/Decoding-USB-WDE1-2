@@ -261,8 +261,8 @@ def analyze():
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
-    print("Obergeschoß  " + values[0] + " °C + "   " + values[ 8] + " % " )
-#    print("Obergeschoß  " + values[0] + "°C " + diff[0] + "   " + values[ 8] + " % " + diff[ 8])
+    print("Obergeschoß  " + values[0] + " °C " + "   " + values[ 8] + " % " )
+    #print("Obergeschoß  " + values[0] + "°C " + diff[0] + "   " + values[ 8] + " % " + diff[ 8])
     print("Halle        " + values[1] + "°C " + diff[1] + "   " + values[ 9] + " % " + diff[ 9])
     print("Schlafzimmer " + values[2] + "°C " + diff[2] + "   " + values[10] + " % " + diff[10])
     print("Toilette     " + values[3] + "°C " + diff[3] + "   " + values[11] + " % " + diff[11])

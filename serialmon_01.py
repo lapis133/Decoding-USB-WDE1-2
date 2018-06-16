@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import gpio as GPIO
-import dht22 as DHT
 import configparser
 import datetime
 import schedule
@@ -12,6 +11,7 @@ from email.mime.text import MIMEText
 import serial
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from serial import SerialException
+import pickle
 import threading
 import socket
 import time
@@ -39,6 +39,34 @@ values = line.split(";")
 lval   = list(values) # last vulues
 diff   = list(values) # diffs
 hcode  = list(values) # html diff
+dht22  = [ "?", "?" ]
+
+#----------------------------[readdht22]
+def readdht22():
+    array = [ "?", "?"]
+    try:
+        with open ("/usr/local/etc/serialmon_01.pic", 'rb') as fp:
+            array = pickle.load(fp)
+        try:
+            os.remove("/usr/local/etc/serialmon_01.pic")
+        except OSError:
+            pass
+        return array
+    except Exception:
+        pass
+
+    try:
+        with open ("serialmon_01.pic", 'rb') as fp:
+            array = pickle.load(fp)
+        try:
+            os.remove("/usr/local/etc/serialmon_01.pic")
+        except OSError:
+            pass
+        return array
+    except Exception:
+        pass
+
+    return array
 
 #----------------------------[gethtmltable]
 def gethtmltable():
@@ -300,6 +328,9 @@ def serial_init():
 def run_test():
     global line
     global lval
+    global dht22
+
+    dht22 = readdht22()
 
     # check line with ?
     analyze()
@@ -327,12 +358,11 @@ def main():
     global lval
     global rel_state
     global hsvr
+    global dht22
+
+    dht22 = readdht22()
 
     GPIO.output(rel_out, GPIO.LOW)
-
-    humidity, temperature = DHT.read_retry(DHT.DHT22, 10)
-    print (humidity)
-    print (temperature)
 
     thread = threading.Thread(target=serverthread, args=[])
     thread.start()
@@ -375,6 +405,7 @@ def main():
             GPIO.output(rel_out, GPIO.HIGH)
         else:
             GPIO.output(rel_out, GPIO.LOW)
+        dht22 = readdht22()
 
 #----------------------------[]
 if __name__=='__main__':

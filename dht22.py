@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-#22 10
 try:
     from Adafruit_DHT import *
 except ImportError:

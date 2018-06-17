@@ -3,13 +3,10 @@
 
 import gpio as GPIO
 import log
-import configparser
 import datetime
 import schedule
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import serial
+import mail
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from serial import SerialException
 import pickle
@@ -34,9 +31,7 @@ GPIO.setup(svr_red, GPIO.OUT)
 GPIO.setup(rel_out, GPIO.OUT)
 
 line   = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
-line   = line.replace("$1;1;;", "")
-line   = line.replace(',', '.')
-values = line.split(";")
+values = ["?"] * 16
 lval   = list(values) # last vulues
 diff   = list(values) # diffs
 hcode  = list(values) # html diff
@@ -161,57 +156,6 @@ def serverthread():
     log.info("svr", "stop")
     return
 
-#----------------------------[send_mail]
-def send_mail():
-    global values
-    global diff
-
-    # read config
-    config = configparser.ConfigParser()
-    config.read('/usr/local/etc/serialmon_01.ini')
-    try:
-        host  = config["EMAIL"]["SMPT_HOST"]
-        port  = config["EMAIL"]["SMPT_PORT"]
-        email = config["EMAIL"]["SMPT_EMAIL"]
-        passw = config["EMAIL"]["SMPT_PASSWORD"]
-        dest  = config["EMAIL"]["DESTINATION_EMAIL"]
-    except KeyError:
-        log.info("mail", "serialmon_01.ini not filled")
-        return
-
-    # email login
-    try:
-        s = smtplib.SMTP(host, port)
-        s.starttls()
-        s.login(email, passw)
-    except Exception:
-        log.info("mail", "SMTP error: " + traceback.format_exc())
-        return
-
-    # prepare email
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = "home temperature observation status"
-    msg['From'] = email
-    msg['To'] = dest
-
-    html = """
-    <head></head>
-    <body>
-        %s
-    </body>
-    """ % gethtmltable()
-    msg.attach(MIMEText(html, 'html'))
-
-    # send email
-    try:
-        s.sendmail(email, dest, msg.as_string())
-        s.quit()
-        log.info("mail", "email send")
-    except Exception as e:
-        log.info("mail", "SMTP error:" + e)
-
-    return
-
 #----------------------------[once_a_hour]
 def once_a_hour():
     global line
@@ -249,7 +193,7 @@ def once_a_day():
     lval = list(values)
 
     # send mail
-    send_mail()
+    mail.send(gethtmltable())
     return
 
 #----------------------------[analyze]
@@ -342,6 +286,8 @@ def main():
 
     GPIO.output(rel_out, GPIO.LOW)
 
+    mail.send(gethtmltable())
+
     thread = threading.Thread(target=serverthread, args=[])
     thread.start()
 
@@ -392,5 +338,8 @@ if __name__=='__main__':
         main()
     except:
         GPIO.cleanup()
-        hsvr.shutdown()
+        try:
+            hsvr.shutdown()
+        except:
+            pass
         log.info("main", "exit")

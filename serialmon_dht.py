@@ -3,6 +3,7 @@
 import pickle
 import dht22 as DHT
 import time
+import log
 
 #----------------------------[writearray]
 def writearray(array):
@@ -35,6 +36,8 @@ def main():
 if __name__=='__main__':
     global hsvr
     try:
+        log.info("dht", "starting")
         main()
     except:
+        log.info("dht", "exit")
         pass

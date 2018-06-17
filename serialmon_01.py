@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import gpio as GPIO
+import log
 import configparser
 import datetime
 import schedule
@@ -115,14 +116,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.senddata("</body>")
 
     def do_GET(self):
-        log_info("<svr> do_GET")
+        log.info("svr", "do_GET")
         self.resp_header()
         self.resp_page()
 
     def do_POST(self):
         global rel_state
 
-        log_info("<svr> do_POST")
+        log.info("svr", "do_POST")
         if rel_state == 1:
             rel_state = 0
         else:
@@ -134,7 +135,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 def serverthread():
     global hsvr
 
-    log_info("<svr> init")
+    log.info("svr", "init")
     GPIO.output(svr_grn, GPIO.LOW)
     GPIO.output(svr_red, GPIO.HIGH)
 
@@ -150,35 +151,14 @@ def serverthread():
             time.sleep(1)
 
     # running
-    log_info("<svr> started")
+    log.info("svr", "started")
     GPIO.output(svr_grn, GPIO.HIGH)
     GPIO.output(svr_red, GPIO.LOW)
     try:
         hsvr.serve_forever()
     except KeyboardInterrupt:
         hsvr.server_close()
-    log_info("<svr> stop")
-    return
-
-#----------------------------[log_info]
-def log_info(info):
-    print("[log] " + info)
-    try:
-        f = open("/var/log/serialmon_info.log","a")
-    except PermissionError:
-        f = open("serialmon_info.log","a")
-    f.write(time.strftime("%Y-%m-%d %H:%M:%S") + ": " + info + "\r\n")
-    f.close()
-    return
-
-#----------------------------[log_line]
-def log_line(line):
-    try:
-        f = open("/var/log/serialmon_01.log","a")
-    except PermissionError:
-        f = open("serialmon_01.log","a")
-    f.write(time.strftime("%d.%m.%Y %H:00") + ";" + line + "\r\n")
-    f.close()
+    log.info("svr", "stop")
     return
 
 #----------------------------[send_mail]
@@ -196,7 +176,7 @@ def send_mail():
         passw = config["EMAIL"]["SMPT_PASSWORD"]
         dest  = config["EMAIL"]["DESTINATION_EMAIL"]
     except KeyError:
-        log_info("serialmon_01.ini not filled")
+        log.info("mail", "serialmon_01.ini not filled")
         return
 
     # email login
@@ -205,7 +185,7 @@ def send_mail():
         s.starttls()
         s.login(email, passw)
     except Exception:
-        log_info("SMTP error: " + traceback.format_exc())
+        log.info("mail", "SMTP error: " + traceback.format_exc())
         return
 
     # prepare email
@@ -226,9 +206,9 @@ def send_mail():
     try:
         s.sendmail(email, dest, msg.as_string())
         s.quit()
-        log_info("email send")
+        log.info("mail", "email send")
     except Exception as e:
-        log_info("SMTP error:" + e)
+        log.info("mail", "SMTP error:" + e)
 
     return
 
@@ -236,8 +216,8 @@ def send_mail():
 def once_a_hour():
     global line
 
-    log_info("once_a_hour")
-    log_line(line)
+    log.info("main", "once_a_hour")
+    log.line(line)
     return
 
 #----------------------------[once_a_day]
@@ -247,7 +227,7 @@ def once_a_day():
     global diff
     global values
 
-    log_info("once_a_day")
+    log.info("main", "once_a_day")
 
     # calculate diff
     for i in range(16):
@@ -315,12 +295,11 @@ def serial_init():
 
         try:
             ser = serial.Serial("/dev/ttyUSB0", 9600)
-            log_info("usb connected")
+            log.info("serial", "usb connected")
             GPIO.output(led_grn, GPIO.HIGH)
             GPIO.output(led_red, GPIO.LOW)
             return
         except SerialException:
-            print ("[dbg] unable to connect")
             GPIO.output(led_red, GPIO.LOW)
             time.sleep(0.5)
             GPIO.output(led_red, GPIO.HIGH)
@@ -372,7 +351,7 @@ def main():
             run_test()
             time.sleep(2)
             hsvr.shutdown()
-            log_info("exit (debug)")
+            log.info("main", "exit (debug)")
             GPIO.cleanup()
             return
         if sys.argv[1] == "fakeval":
@@ -409,9 +388,9 @@ def main():
 if __name__=='__main__':
     global hsvr
     try:
-        log_info("starting")
+        log.info("main", "starting")
         main()
     except:
         GPIO.cleanup()
         hsvr.shutdown()
-        log_info("exit")
+        log.info("main", "exit")

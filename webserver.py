@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import gpio as GPIO
 import log
 import threading
 import time
 
 hsvr = None
-gethtmltable = None
-relstate = None
-relupdate = None
+fkt_gethtmltable = None
+fkt_relstate = None
+fkt_relupdate = None
+fkt_led = None
 
 #----------------------------[MyServer]
 class RequestHandler(BaseHTTPRequestHandler):
@@ -26,8 +26,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.senddata("<head><title>home temperature observation</title><meta http-equiv='refresh' content='5'></head>")
         self.senddata("<body><font face='verdana,arial'>")
         self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
-        self.senddata(gethtmltable())
-        if relstate() == 1:
+        self.senddata(fkt_gethtmltable())
+        if fkt_relstate() == 1:
             self.senddata("<form action='' method='post'><button name='foo' value='upvote'>Heizung aus</button></form>")
         else:
             self.senddata("<form action='' method='post'><button name='foo' value='upvote'>Heizung ein</button></form>")
@@ -42,10 +42,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         global rel_state
 
         log.info("websvr", "do_POST")
-        if relstate() == 1:
-            relupdate(0)
+        if fkt_relstate() == 1:
+            fkt_relupdate(0)
         else:
-            relupdate(1)
+            fkt_relupdate(1)
         self.resp_header()
         self.resp_page()
 
@@ -54,7 +54,7 @@ def serverthread():
     global hsvr
 
     log.info("websvr", "init")
-    GPIO.tcp_status(0)
+    fkt_led(0)
 
     # init server
     while True:
@@ -62,12 +62,11 @@ def serverthread():
             hsvr = HTTPServer(("", 4711), RequestHandler)
             break
         except Exception:
-            GPIO.tcp_blink(0)
             time.sleep(1)
 
     # running
     log.info("websvr", "started")
-    GPIO.tcp_status(1)
+    fkt_led(1)
     try:
         hsvr.serve_forever()
     except KeyboardInterrupt:
@@ -82,14 +81,16 @@ def stop():
         hsvr.shutdown()
 
 #----------------------------[start]
-def start(gethtmltable_fkt, relstate_fkt, relupdate_fkt):
-    global gethtmltable
-    global relstate
-    global relupdate
+def start(fgethtmltable, frelstate, frelupdate, fled):
+    global fkt_gethtmltable
+    global fkt_relstate
+    global fkt_relupdate
+    global fkt_led
 
-    gethtmltable = gethtmltable_fkt
-    relstate = relstate_fkt
-    relupdate = relupdate_fkt
+    fkt_gethtmltable = fgethtmltable
+    fkt_relstate = frelstate
+    fkt_relupdate = frelupdate
+    fkt_led = fled
     thread = threading.Thread(target=serverthread, args=[])
     thread.start()
     return

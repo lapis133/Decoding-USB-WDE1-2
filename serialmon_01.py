@@ -181,7 +181,7 @@ def serial_init():
 def main():
     # init
     GPIO.init()
-    webserver.start(gethtmltable, relstate, relupdate)
+    webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
     schedule.every().day.at("08:00").do(once_a_day, 1)
     schedule.every().hour.do(once_a_hour)
 

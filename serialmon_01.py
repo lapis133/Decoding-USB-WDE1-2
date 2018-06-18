@@ -255,7 +255,7 @@ except Exception as ex:
      log.info("main", str(lval))
     # send mail
 if sendmail == 1:
-    return
+return
 
 #----------------------------[analyze]
 def analyze():

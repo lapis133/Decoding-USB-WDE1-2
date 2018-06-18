@@ -29,7 +29,7 @@ def relupdate(val):
     global rel_state
 
     rel_state = val
-    GPIO.relay(relstate())
+    GPIO.relay(rel_state)
     return
 
 #----------------------------[gethtmltable]

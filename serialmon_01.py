@@ -250,7 +250,7 @@ try:
             hcode[i] = "&#9679;"
     lval = list(values)
 except Exception as ex:
-     log.info("main", "error calculate diff: {:s}",.format(str(ex)))
+     log.info("main", "error calculate diff: {:s}".format(str(ex)))
      log info("main", str(values))
      log info("main", str(lval))
     # send mail

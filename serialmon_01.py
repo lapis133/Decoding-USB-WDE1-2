@@ -251,8 +251,8 @@ try:
     lval = list(values)
 except Exception as ex:
      log.info("main", "error calculate diff: {:s}".format(str(ex)))
-     log info("main", str(values))
-     log info("main", str(lval))
+     log.info("main", str(values))
+     log.info("main", str(lval))
     # send mail
     if sendmail == 1:
     return

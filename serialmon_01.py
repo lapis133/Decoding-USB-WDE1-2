@@ -223,34 +223,38 @@ def once_a_day():
     global diff
     global values
 
-    log_info("once_a_day")
+    log.info("main", "once_a_day")
 
-    log_info("show values")
-    log_line(values)
-    log_info("show lval")
-    log_line(lval)
-    
+#    log_info("show values")
+ #   log_line(values)
+ #   log_info("show lval")
+ #   log_line(lval)
+
     # calculate diff
- #   for i in range(16):
- #       if lval[i] == "?":
- #           lval[i] = values[i]
-#
- #       if   values[i] == "?":
-#            diff[i] = "-"
-#            hcode[i] = "-"
-#        elif float(values[i]) > float(lval[i]):
- #           diff[i] = "▲"
- #           hcode[i] = "&#9650;"
- #       elif float(values[i]) < float(lval[i]):
- #           diff[i] = "▼"
- #           hcode[i] = "&#9660;"
- #       else:
- #           diff[i] = "●"
- #           hcode[i] = "&#9679;"
- #   lval = list(values)
+try:  
+    for i in range(16):
+        if lval[i] == "?":
+            lval[i] = values[i]
 
+        if   values[i] == "?":
+            diff[i] = "-"
+            hcode[i] = "-"
+        elif float(values[i]) > float(lval[i]):
+            diff[i] = "▲"
+            hcode[i] = "&#9650;"
+        elif float(values[i]) < float(lval[i]):
+            diff[i] = "▼"
+            hcode[i] = "&#9660;"
+        else:
+            diff[i] = "●"
+            hcode[i] = "&#9679;"
+    lval = list(values)
+except Exception as ex:
+     log.info("main", "error calculate diff: {:s}",.format(str(ex)))
+     log info("main", str(values))
+     log info("main", str(lval))
     # send mail
-    send_mail()
+    if sendmail == 1:
     return
 
 #----------------------------[analyze]

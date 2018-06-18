@@ -225,6 +225,11 @@ def once_a_day():
 
     log_info("once_a_day")
 
+    log_info("show values")
+    log_line(values)
+    log_info("show lval")
+    log_line(lval)
+    
     # calculate diff
  #   for i in range(16):
  #       if lval[i] == "?":
@@ -243,8 +248,7 @@ def once_a_day():
  #           diff[i] = "●"
  #           hcode[i] = "&#9679;"
  #   lval = list(values)
- #   print("[log] " + values)
- #   print("[log] " + lval)
+
     # send mail
     send_mail()
     return

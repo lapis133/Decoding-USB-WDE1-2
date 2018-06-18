@@ -66,23 +66,28 @@ def once_a_day(sendmail):
     log.info("main", "once_a_day")
 
     # calculate diff
-    for i in range(16):
-        if lval[i] == "?":
-            lval[i] = values[i]
+    try:
+        for i in range(16):
+            if lval[i] == "?":
+                lval[i] = values[i]
 
-        if   values[i] == "?":
-            diff[i] = "-"
-            hcode[i] = "-"
-        elif float(values[i]) > float(lval[i]):
-            diff[i] = "▲"
-            hcode[i] = "&#9650;"
-        elif float(values[i]) < float(lval[i]):
-            diff[i] = "▼"
-            hcode[i] = "&#9660;"
-        else:
-            diff[i] = "●"
-            hcode[i] = "&#9679;"
-    lval = list(values)
+            if   values[i] == "?":
+                diff[i] = "-"
+                hcode[i] = "-"
+            elif float(values[i]) > float(lval[i]):
+                diff[i] = "▲"
+                hcode[i] = "&#9650;"
+            elif float(values[i]) < float(lval[i]):
+                diff[i] = "▼"
+                hcode[i] = "&#9660;"
+            else:
+                diff[i] = "●"
+                hcode[i] = "&#9679;"
+        lval = list(values)
+    except Exception as ex:
+        log.info("main", "error calculate diff: {:s}".format(str(ex)))
+        log.info("main", str(values))
+        log.info("main", str(lval))
 
     # send mail
     if sendmail == 1:

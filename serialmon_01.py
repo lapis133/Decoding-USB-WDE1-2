@@ -243,7 +243,8 @@ def once_a_day():
  #           diff[i] = "●"
  #           hcode[i] = "&#9679;"
  #   lval = list(values)
-    print("not done diff")
+    print("values" + (values) )
+    print("lval" + (lval )
     # send mail
     send_mail()
     return

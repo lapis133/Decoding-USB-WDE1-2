@@ -103,10 +103,11 @@ def analyze(newline):
     line = newline
     line = line.replace("$1;1;;", "")
     line = line.replace(',', '.')
-    values = (line.split(";"))
+    values = line.split(";")
 
     # readdht
     dht22 = DHT.read()
+    print(dht22)
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))

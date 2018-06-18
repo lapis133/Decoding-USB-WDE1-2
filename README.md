@@ -35,26 +35,31 @@ ps -aux | grep  python3 /usr/local/bin/serialmon_01.py
 sudo kill xxx
 ```
 
+## Running (DHT22)
+```
+sudo python serialmon_dht22.py
+```
+
 ### optional hardware layout
 http://rpi.science.uoit.ca/lab/gpio/
 ```
                     USB-Status                              TCP-Status
-                    +---+---+                               +---+---+ 
-                    ^   |   ^                               ^   |   ^ 
-                   LED  |  LED                             LED  |  LED 
-                  green |  red                             red  | green 
-                    ^   |   ^                               ^   |   ^ 
-                   1k0  |  1k0                             1k0  |  1k0 
-                    |   |   |                               |   |   | 
+                    +---+---+                               +---+---+
+                    ^   |   ^                               ^   |   ^
+                   LED  |  LED                             LED  |  LED
+                  green |  red                             red  | green
+                    ^   |   ^                               ^   |   ^
+                   1k0  |  1k0                             1k0  |  1k0
+                    |   |   |                               |   |   |
 2   4   6   8   10  12  14  16  18  20  22  24  26  28  30  32  34  36  38  40
 1   3   5   7   9   11  13  15  17  19  21  23  25  27  29  31  33  35  37  39
-|           |   |   |           |    |          |
-|        +--+   |   |           +4k7-+    +-----+
-|        |  |   |  REL          |    |    |
-|       4k7 |   |               P1   P2   P4
-|        |  |   |                  DHT22
-+--------+  |   |
-         |  |   |
+|           |   |   |           |    |          |                       |   |
+|        +--+   |   |           +4k7-+    +-----+                      1k0  ^
+|        |  |   |  REL          |    |    |                             |   |
+|       4k7 |   |               P1   P2   P4                           LED  |
+|        |  |   |                  DHT22                              DHT22 ^
++--------+  |   |                                                       |   |
+         |  |   |                                                       +---+
          P3 P2 P1
           DS1820
 ```
@@ -68,5 +73,6 @@ for email notification fill the variables in /usr/local/etc/serialmon_01.ini
 
 add in /etc/rc.local before the last line (exit 0):
 ```
+/usr/local/bin/serialmon_dht22.py &
 /usr/local/bin/serialmon_01.py &
 ```

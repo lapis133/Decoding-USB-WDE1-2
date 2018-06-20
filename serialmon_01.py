@@ -110,8 +110,8 @@ def analyze(newline):
     values = line.split(";")
 
     # readdht
-    dht22 = DHT.read()
-    print(dht22)
+#    dht22 = DHT.read()
+#    print(dht22)
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
@@ -193,7 +193,8 @@ def main():
     # init
     GPIO.init()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
-    schedule.every().day.at("08:00").do(once_a_day, 1)
+#    schedule.every().day.at("08:00").do(once_a_day, 1)
+    schedule.every().hour.do(once_a_day, 1)
     schedule.every().hour.do(once_a_hour)
 
     # arguments

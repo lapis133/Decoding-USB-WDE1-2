@@ -194,8 +194,8 @@ def main():
     GPIO.init()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
 #    schedule.every().day.at("08:00").do(once_a_day, 1)
-    schedule.every().hour.do(once_a_day, 1)
-    schedule.every().hour.do(once_a_hour)
+    schedule.every(4).hours.do(once_a_day, 1)
+    schedule.every(2).hours.do(once_a_hour)
 
     # arguments
     checkarguments()

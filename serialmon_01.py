@@ -77,6 +77,12 @@ def once_a_day(sendmail):
             if   values[i] == "?":
                 diff[i] = "-"
                 hcode[i] = "-"
+            elif values[i] == "":
+                diff[i] = "-"
+                hcode[i] = "-"
+            elif values[i] == " ":
+                diff[i] = "-"
+                hcode[i] = "-"
             elif float(values[i]) > float(lval[i]):
                 diff[i] = "▲"
                 hcode[i] = "&#9650;"

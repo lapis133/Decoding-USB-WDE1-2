@@ -11,6 +11,26 @@ fkt_relstate = None
 fkt_relupdate = None
 fkt_led = None
 
+#----------------------------[serverthread]
+def readlog():
+    log = ""
+    try:
+        f = open("/var/log/serialmon_01.log","r")
+    except Exception:
+        try:
+            f = open("serialmon_01.log","r")
+        except Exception:
+            return "no log found"
+
+    while True:
+        rl = f.readline()
+        if not rl:
+            break;
+        line = str(rl)
+        log += line.replace('\n', "<br>")
+
+    return log
+
 #----------------------------[MyServer]
 class RequestHandler(BaseHTTPRequestHandler):
     def resp_header(self):
@@ -21,33 +41,50 @@ class RequestHandler(BaseHTTPRequestHandler):
     def senddata(self, data):
         self.wfile.write(bytes(data, "utf-8"))
 
-    def resp_page(self):
-        self.senddata("<html>")
-        self.senddata("<head><title>home temperature observation</title><meta http-equiv='refresh' content='5'></head>")
-        self.senddata("<body><font face='verdana,arial'>")
-        self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
-        self.senddata(fkt_gethtmltable())
-        if fkt_relstate() == 1:
-            self.senddata("<form action='' method='post'><button name='foo' value='upvote'>Heizung aus</button></form>")
+    def resp_page(self, logflag):
+        if logflag == 0:
+            self.senddata("<html>")
+            self.senddata("<head><title>home temperature observation</title><meta http-equiv='refresh' content='5'></head>")
+            self.senddata("<body><font face='verdana,arial'>")
+            self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
+            self.senddata(fkt_gethtmltable())
+            if fkt_relstate() == 1:
+                self.senddata("<form action='' method='post'><button name='relstate'>Heizung aus</button></form>")
+            else:
+                self.senddata("<form action='' method='post'><button name='relstate'>Heizung ein</button></form>")
+            self.senddata("<form action='' method='post'><button name='log'>Logfile</button></form>")
+            self.senddata("</body>")
         else:
-            self.senddata("<form action='' method='post'><button name='foo' value='upvote'>Heizung ein</button></form>")
-        self.senddata("</body>")
+            self.senddata("<html>")
+            self.senddata("<head><title>home temperature observation</title></head>")
+            self.senddata("<body><font face='verdana,arial'>")
+            self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
+            self.senddata(readlog())
+            self.senddata("</body>")
 
     def do_GET(self):
         log.info("websvr", "do_GET")
         self.resp_header()
-        self.resp_page()
+        if   self.path == "/":
+            self.resp_page(0)
+        elif self.path == "/log":
+            self.resp_page(1)
 
     def do_POST(self):
-        global rel_state
+        content_length = self.headers.get('content-length')
+        length = int(content_length[0]) if content_length else 0
+        val = str(self.rfile.read(length))
 
-        log.info("websvr", "do_POST")
-        if fkt_relstate() == 1:
-            fkt_relupdate(0)
-        else:
-            fkt_relupdate(1)
+        log.info("websvr", "do_POST: {:s}".format(val))
         self.resp_header()
-        self.resp_page()
+        if val.find("relstate") != -1:
+            if fkt_relstate() == 1:
+                fkt_relupdate(0)
+            else:
+                fkt_relupdate(1)
+            self.resp_page(0)
+        elif val.find ("log") != -1:
+            self.resp_page(1)
 
 #----------------------------[serverthread]
 def serverthread():

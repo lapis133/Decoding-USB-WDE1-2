@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import gpio as GPIO
-import log
 import schedule
 import serial
-import mail
 from serial import SerialException
-import dht22 as DHT
-import webserver
 import time
 import sys
+# own modules
+import gpio as GPIO
+import dht22 as DHT
+import webserver
+import mail
+import log
 
 rel_state = 0
 

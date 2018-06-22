@@ -105,3 +105,4 @@ ENV/
 # VS
 .json
 .vscode
+.pic

@@ -35,17 +35,19 @@ def relupdate(val):
 
 #----------------------------[gethtmltable]
 def gethtmltable():
-    html  = "<table>"
-    html += "<tr align='left'><th>Raum</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchtigkeit</th></tr>"
-    html += "<tr><td>Obergescho&szlig;&nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[0], hcode[0], values[ 8], hcode[ 8])
-    html += "<tr><td>Halle            &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[1], hcode[1], values[ 9], hcode[ 9])
-    html += "<tr><td>Schlafzimmer     &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[2], hcode[2], values[10], hcode[10])
-    html += "<tr><td>Toilette         &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[3], hcode[3], values[11], hcode[11])
-    html += "<tr><td>Badezimmer       &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[4], hcode[4], values[12], hcode[12])
-    html += "<tr><td>K&uuml;che       &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[5], hcode[5], values[13], hcode[13])
-    html += "<tr><td>Heizung          &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[6], hcode[6], values[14], hcode[14])
-    html += "<tr><td>B&uuml;ro        &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[7], hcode[7], values[15], hcode[15])
-    html += "</table><p>"
+    html  = "<tt><table>"
+    html += "<tr align='left'><th>Raum</th><th>Temperatur  </th><th>Luftfeuchtigkeit</th></tr>"
+    html += "<tr><td>Obergescho&szlig;</td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[0], hcode[0], values[ 9], hcode[ 9])
+    html += "<tr><td>Halle            </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[1], hcode[1], values[10], hcode[10])
+    html += "<tr><td>Schlafzimmer     </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[2], hcode[2], values[11], hcode[11])
+    html += "<tr><td>Toilette         </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[3], hcode[3], values[12], hcode[12])
+    html += "<tr><td>Badezimmer       </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[4], hcode[4], values[13], hcode[13])
+    html += "<tr><td>K&uuml;che       </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[5], hcode[5], values[14], hcode[14])
+    html += "<tr><td>Heizung          </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[6], hcode[6], values[15], hcode[15])
+    html += "<tr><td>B&uuml;ro        </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[7], hcode[7], values[16], hcode[16])
+    html += "<tr><td>Au&szlig;en      </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[8], hcode[8], values[17], hcode[17])
+    html += "</table></tt><p>"
+    html = html.replace(" ", "&nbsp;")
     if relstate() == 1:
         html += "Heizung ist ein<br>"
     else:
@@ -68,7 +70,7 @@ def once_a_day(sendmail):
 
     # calculate diff
     try:
-        for i in range(16):
+        for i in range(16+2):
             if lval[i] == "?":
                 lval[i] = values[i]
 
@@ -109,17 +111,30 @@ def analyze(newline):
     # readdht
     dht22 = DHT.read()
     print(dht22)
+    values.insert(8,  dht22[1])
+    values.insert(17, dht22[0])
+
+    # format
+    try:
+        for i in range(16+2):
+            if values[i] != "?":
+                xval = float(values[i])
+                xstr = "{:3.1f}".format(xval)
+                values[i] = xstr
+    except Exception:
+        pass
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
-    print("Obergeschoß  " + values[0] + "°C " + diff[0] + "   " + values[ 8] + " % " + diff[ 8])
-    print("Halle        " + values[1] + "°C " + diff[1] + "   " + values[ 9] + " % " + diff[ 9])
-    print("Schlafzimmer " + values[2] + "°C " + diff[2] + "   " + values[10] + " % " + diff[10])
-    print("Toilette     " + values[3] + "°C " + diff[3] + "   " + values[11] + " % " + diff[11])
-    print("Badezimmer   " + values[4] + "°C " + diff[4] + "   " + values[12] + " % " + diff[12])
-    print("Küche        " + values[5] + "°C " + diff[5] + "   " + values[13] + " % " + diff[13])
-    print("Heizung      " + values[6] + "°C " + diff[6] + "   " + values[14] + " % " + diff[14])
-    print("Büro         " + values[7] + "°C " + diff[7] + "   " + values[15] + " % " + diff[15])
+    print("Obergeschoß  {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[0], diff[0], values[ 9], diff[ 9]))
+    print("Halle        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[1], diff[1], values[10], diff[10]))
+    print("Schlafzimmer {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[2], diff[2], values[11], diff[11]))
+    print("Toilette     {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[3], diff[3], values[12], diff[12]))
+    print("Badezimmer   {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[4], diff[4], values[13], diff[13]))
+    print("Küche        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[5], diff[5], values[14], diff[14]))
+    print("Heizung      {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[6], diff[6], values[15], diff[15]))
+    print("Büro         {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[7], diff[7], values[16], diff[16]))
+    print("Außen        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[8], diff[8], values[17], diff[17]))
     return
 
 #----------------------------[run_test]
@@ -166,7 +181,7 @@ def checkarguments():
         lval[0] = "8.8"
         lval[1] = "22.5"
         once_a_hour()
-        once_a_day()
+        once_a_day(0)
         analyze()
 
     return

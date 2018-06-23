@@ -26,7 +26,7 @@ def writearray(array):
 
 #----------------------------[main]
 def main():
-    array = [ "?", "?"]
+    array = [ "?", "?", "?", "?"]
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(status_led, GPIO.OUT)
     GPIO.output(status_led, GPIO.HIGH)
@@ -34,8 +34,8 @@ def main():
         humidity, temperature = DHT.read_retry(DHT.DHT22, 10)
         #humidity = 47.123456
         #temperature = 26.123456
-        array[0] = str(humidity)
-        array[1] = str(temperature)
+        array[0] = str(temperature)
+        array[1] = str(humidity)
         print (array)
         writearray(array)
         time.sleep(60)

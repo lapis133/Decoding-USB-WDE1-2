@@ -58,9 +58,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.senddata("<html>")
             self.senddata("<head><title>home temperature observation</title></head>")
             self.senddata("<body><font face='verdana,arial'>")
-            self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
+            self.senddata("<p>{:s}</p><tt>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
             self.senddata(readlog())
-            self.senddata("</body>")
+            self.senddata("</tt></body>")
 
     def do_GET(self):
         log.info("websvr", "do_GET")
@@ -116,6 +116,7 @@ def stop():
     global hsvr
     if hsvr != None:
         hsvr.shutdown()
+    return
 
 #----------------------------[start]
 def start(fgethtmltable, frelstate, frelupdate, fled):

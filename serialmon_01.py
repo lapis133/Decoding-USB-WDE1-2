@@ -72,7 +72,7 @@ def once_a_day(sendmail):
 
     # calculate diff
     try:
-        for i in range(16+4):
+        for i in range(20):
             if lval[i] == "?":
                 lval[i] = values[i]
 
@@ -118,7 +118,6 @@ def analyze(newline):
 
     # sensors
     sin = sensors.read()
-    print(sin)
     values.insert(8,  sin[0])
     values.insert(18, sin[1])
     values.insert(9,  sin[2])
@@ -126,7 +125,7 @@ def analyze(newline):
 
     # format
     try:
-        for i in range(16+2):
+        for i in range(20):
             if values[i] != "?":
                 xval = float(values[i])
                 xstr = "{:3.1f}".format(xval)
@@ -182,6 +181,7 @@ def checkarguments():
     if sys.argv[1] == "debug":
         run_test()
         time.sleep(2)
+        sensors.stop()
         webserver.stop()
         log.info("main", "exit (debug)")
         GPIO.cleanup()
@@ -215,6 +215,7 @@ def serial_init():
 def main():
     # init
     GPIO.init()
+    sensors.start()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
     schedule.every().day.at("08:00").do(once_a_day, 1)
     schedule.every().hour.do(once_a_hour)
@@ -243,5 +244,6 @@ if __name__=='__main__':
         main()
     except:
         GPIO.cleanup()
+        sensors.stop()
         webserver.stop()
         log.info("main", "exit")

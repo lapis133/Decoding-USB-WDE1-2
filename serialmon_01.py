@@ -15,11 +15,12 @@ import log
 
 rel_state = 0
 
-line   = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
-values = ["?"] * (16+2)
-lval   = list(values) # last vulues
-diff   = list(values) # diffs
-hcode  = list(values) # html diff
+defline = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
+line    = str(defline)
+values  = ["?"] * (16+2)
+lval    = list(values) # last vulues
+diff    = list(values) # diffs
+hcode   = list(values) # html diff
 
 #----------------------------[relstate]
 def relstate():
@@ -151,7 +152,7 @@ def run_test():
     dht22 = DHT.read()
     print (dht22)
     # check line with ?
-    analyze("$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?")
+    analyze(defline)
     once_a_hour()
     once_a_day(0)
     # check received line
@@ -202,6 +203,7 @@ def serial_init():
         return ser
     except SerialException:
         GPIO.usb_blink(0)
+        analyze(defline)
         time.sleep(5)
         return None
 

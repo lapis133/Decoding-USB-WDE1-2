@@ -35,6 +35,7 @@ def relupdate(val):
 #----------------------------[gethtmltable]
 def gethtmltable():
     html  = "<table>"
+#    html += "<tr align='left'><th><h3>21,8 &deg;C</th></h3>"
     html += "<tr align='left'><th>Raum</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchte</th></tr>"
     html += "<tr><td>Obergescho&szlig;&nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[0], hcode[0], values[ 8], hcode[ 8])
     html += "<tr><td>Halle            &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[1], hcode[1], values[ 9], hcode[ 9])
@@ -194,8 +195,8 @@ def main():
     GPIO.init()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
 #    schedule.every().day.at("08:00").do(once_a_day, 1)
-    schedule.every(4).hours.do(once_a_day, 1)
-    schedule.every(2).hours.do(once_a_hour)
+    schedule.every(12).hours.do(once_a_day, 1)
+    schedule.every(4).hours.do(once_a_hour)
 
     # arguments
     checkarguments()

@@ -34,8 +34,10 @@ def relupdate(val):
 
 #----------------------------[gethtmltable]
 def gethtmltable():
+
+    html += "<tr align=#'left'><th><h3>21,8 &deg;C</th></h3>"
+
     html  = "<table>"
-#    html += "<tr align='left'><th><h3>21,8 &deg;C</th></h3>"
     html += "<tr align='left'><th>Raum</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchte</th></tr>"
     html += "<tr><td>Obergescho&szlig;&nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[0], hcode[0], values[ 8], hcode[ 8])
     html += "<tr><td>Halle            &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[1], hcode[1], values[ 9], hcode[ 9])

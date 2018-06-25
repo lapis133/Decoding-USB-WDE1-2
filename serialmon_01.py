@@ -73,27 +73,20 @@ def once_a_day(sendmail):
     # calculate diff
     try:
         for i in range(20):
-            if lval[i] == "?":
-                lval[i] = values[i]
+            try:
+                if float(values[i]) > float(lval[i]):
+                    diff[i] = "▲"
+                    hcode[i] = "&#9650;"
+                elif float(values[i]) < float(lval[i]):
+                    diff[i] = "▼"
+                    hcode[i] = "&#9660;"
+                else:
+                    diff[i] = "●"
+                    hcode[i] = "&#9679;"
+            except Exception:
+                diff[i] = "-"
+                hcode[i] = "-"
 
-            if   values[i] == "?":
-                diff[i] = "-"
-                hcode[i] = "-"
-            elif values[i] == "":
-                diff[i] = "-"
-                hcode[i] = "-"
-            elif values[i] == " ":
-                diff[i] = "-"
-                hcode[i] = "-"
-            elif float(values[i]) > float(lval[i]):
-                diff[i] = "▲"
-                hcode[i] = "&#9650;"
-            elif float(values[i]) < float(lval[i]):
-                diff[i] = "▼"
-                hcode[i] = "&#9660;"
-            else:
-                diff[i] = "●"
-                hcode[i] = "&#9679;"
         lval = list(values)
     except Exception as ex:
         log.info("main", "error calculate diff: {:s}".format(str(ex)))

@@ -1,8 +1,14 @@
-# Decoding-USB-WDE1-2
-The incoming string looks like this:
-```
-$1;1; ;25,9; ;23,8;24,4;24,8;25,4;23,6;23,2;54; ;61;61;60;58;63;63; ; ; ; ; ;0
-```
+# Home temperature observation
+
+Key features of this project are:
+* Decoding USB-WDE1-2
+* Decoding DHT22
+* Decoding DS1822
+* LED status
+* Temperature logging
+* Email notification
+* Webserver
+
 Programm logging is found in /var/log/serialmon_info.log and the received lines in /var/log/serialmon_01.log
 
 ## Preparation
@@ -83,7 +89,7 @@ add in /etc/rc.local before the last line (exit 0):
 
 **If using DS1820:**
 
-add in #/etc/modules
+add in /etc/modules
 ```
 w1-gpio pullup=1
 w1-therm

@@ -32,15 +32,19 @@ python3 serialmon_01.py fakeval
 If already "installed" execute this before running from console:
 ```
 ps -aux | grep  python3 /usr/local/bin/serialmon_01.py
-sudo kill xxx
+sudo kill [pid]
 ```
 
-## Running (DHT22)
+**Running (DHT22)**
 ```
 sudo python serialmon_dht22.py
 ```
+or
+```
+sudo python serialmon_dht22.py &
+```
 
-### optional hardware layout
+## optional hardware layout
 http://rpi.science.uoit.ca/lab/gpio/
 ```
                     USB-Status                              TCP-Status
@@ -75,4 +79,17 @@ add in /etc/rc.local before the last line (exit 0):
 ```
 /usr/local/bin/serialmon_dht22.py &
 /usr/local/bin/serialmon_01.py &
+```
+
+**If using DS1820:**
+
+add in #/etc/modules
+```
+w1-gpio pullup=1
+w1-therm
+```
+
+add in /boot/config.txt
+```
+dtoverlay=w1-gpio,gpiopin=4
 ```

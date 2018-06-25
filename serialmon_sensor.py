@@ -21,6 +21,35 @@ def senddata(array):
     s.close()
     return
 
+#----------------------------[ds1820]
+def ds1820():
+    try:
+        file = open('/sys/devices/w1_bus_master1/w1_master_slaves')
+        w1_slaves = file.readlines()
+        file.close()
+    except Exception:
+        log.info("dht", "ds1820: access denied")
+        return "?", "-"
+
+    try:
+        for line in w1_slaves:
+            w1_slave = line.split("\n")[0]
+            file = open('/sys/bus/w1/devices/' + str(w1_slave) + '/w1_slave')
+            filecontent = file.read()
+            file.close()
+
+            stringvalue = filecontent.split("\n")[1].split(" ")[9]
+            temperature = float(stringvalue[2:]) / 1000
+
+            sval = "{:.1f}".format(temperature)
+            print ("DS1820: " + sval)
+            return sval, "-"
+
+    except Exception:
+        log.info("dht", "ds1820: device error")
+
+    return "?", "-"
+
 #----------------------------[main]
 def main():
     array = [ "?", "?", "?", "?"]
@@ -33,6 +62,7 @@ def main():
         temperature = 26.123456
         array[0] = str(temperature)
         array[1] = str(humidity)
+        array[2], array[3] = ds1820()
         print (array)
         senddata(array)
         for i in range (12):

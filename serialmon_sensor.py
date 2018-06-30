@@ -58,8 +58,8 @@ def main():
     GPIO.output(status_led, GPIO.HIGH)
     while True:
         humidity, temperature = DHT.read_retry(DHT.DHT22, 10)
-        humidity = 47.123456
-        temperature = 26.123456
+        #humidity = 47.123456
+        #temperature = 26.123456
         array[0] = str(temperature)
         array[1] = str(humidity)
         array[2], array[3] = ds1820()

@@ -144,9 +144,6 @@ def analyze(newline):
 def run_test():
     global lval
 
-    # dht
-    dht22 = DHT.read()
-    print (dht22)
     # check line with ?
     analyze(defline)
     once_a_hour()

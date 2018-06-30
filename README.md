@@ -13,12 +13,16 @@ Programm logging is found in /var/log/serialmon_info.log and the received lines 
 
 ## Preparation
 ```
+sudo apt-get update
 sudo apt-get install python3-serial python3-rpi.gpio python3-pip
 sudo pip3 install schedule
 ```
 
 If using DHT22:
 ```
+sudo apt-get update
+sudo apt-get install build-essential python-dev
+
 git clone https://github.com/adafruit/Adafruit_Python_DHT.git && cd Adafruit_Python_DHT
 sudo python setup.py install
 ```

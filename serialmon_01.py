@@ -207,7 +207,7 @@ def main():
     GPIO.init()
     sensors.start()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
-    schedule.every().day.at("08:00").do(once_a_day, 1)
+    schedule.every().day.at("17:00").do(once_a_day, 1)
     schedule.every().hour.do(once_a_hour)
 
     # arguments

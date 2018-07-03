@@ -77,27 +77,21 @@ def once_a_day(sendmail):
     log.info("main", "once_a_day")
 
     # calculate diff
-    try:
-        for i in range(20):
-            try:
-                if float(values[i]) > float(lval[i]):
-                    diff[i] = "▲"
-                    hcode[i] = "&#9650;"
-                elif float(values[i]) < float(lval[i]):
-                    diff[i] = "▼"
-                    hcode[i] = "&#9660;"
-                else:
-                    diff[i] = "●"
-                    hcode[i] = "&#9679;"
-            except Exception:
-                diff[i] = "-"
-                hcode[i] = "-"
-
-        lval = list(values)
-    except Exception as ex:
-        log.info("main", "error calculate diff: {:s}".format(str(ex)))
-        log.info("main", str(values))
-        log.info("main", str(lval))
+    for i in range(20):
+        try:
+            if float(values[i]) > float(lval[i]):
+                diff[i] = "▲"
+                hcode[i] = "&#9650;"
+            elif float(values[i]) < float(lval[i]):
+                diff[i] = "▼"
+                hcode[i] = "&#9660;"
+            else:
+                diff[i] = "●"
+                hcode[i] = "&#9679;"
+        except Exception:
+            diff[i] = "-"
+            hcode[i] = "-"
+    lval = list(values)
 
     # send mail
     if sendmail == 1:
@@ -123,14 +117,13 @@ def analyze(newline):
     values.insert(19, sin[3])
 
     # format
-    try:
-        for i in range(20):
-            if values[i] != "?":
-                xval = float(values[i])
-                xstr = "{:3.1f}".format(xval)
-                values[i] = xstr
-    except Exception:
-        pass
+    for i in range(20):
+        try:
+            xval = float(values[i])
+            xstr = "{:3.1f}".format(xval)
+            values[i] = xstr
+        except Exception:
+            pass
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))

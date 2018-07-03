@@ -36,20 +36,26 @@ def relupdate(val):
 
 #----------------------------[gethtmltable]
 def gethtmltable():
+    fval = list(values)
+    for i in range(len(fval)):
+        fval[i] = "{:>5s}".format(values[i])
+        xstr = str(fval[i])
+        xstr = xstr.replace(" ", "&nbsp;")
+        fval[i] = xstr
+
     html  = "<tt><table>"
-    html += "<tr align='left'><th>Raum</th><th>Temperatur  </th><th>Luftfeuchte</th></tr>"
-    html += "<tr><td>Obergescho&szlig;</td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[0], hcode[0], values[10], hcode[10])
-    html += "<tr><td>Halle            </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[1], hcode[1], values[11], hcode[11])
-    html += "<tr><td>Schlafzimmer     </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[2], hcode[2], values[12], hcode[12])
-    html += "<tr><td>Toilette         </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[3], hcode[3], values[13], hcode[13])
-    html += "<tr><td>Badezimmer       </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[4], hcode[4], values[14], hcode[14])
-    html += "<tr><td>K&uuml;che       </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[5], hcode[5], values[15], hcode[15])
-    html += "<tr><td>Heizung          </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[6], hcode[6], values[16], hcode[16])
-    html += "<tr><td>B&uuml;ro        </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[7], hcode[7], values[17], hcode[17])
-    html += "<tr><td>Au&szlig;en      </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[8], hcode[8], values[18], hcode[18])
-    html += "<tr><td>DS1820           </td><td>{:>5s} &deg;C {:s}</td><td>{:>5s} % {:s}</td></tr>".format(values[9], hcode[9], values[19], hcode[19])
+    html += "<tr><th>Raum&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchte</th></tr>"
+    html += "<tr><td>Obergescho&szlig;</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[0], hcode[0], fval[10], hcode[10])
+    html += "<tr><td>Halle            </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[1], hcode[1], fval[11], hcode[11])
+    html += "<tr><td>Schlafzimmer     </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[2], hcode[2], fval[12], hcode[12])
+    html += "<tr><td>Toilette         </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[3], hcode[3], fval[13], hcode[13])
+    html += "<tr><td>Badezimmer       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[4], hcode[4], fval[14], hcode[14])
+    html += "<tr><td>K&uuml;che       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[5], hcode[5], fval[15], hcode[15])
+    html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], hcode[6], fval[16], hcode[16])
+    html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], hcode[7], fval[17], hcode[17])
+    html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], hcode[8], fval[18], hcode[18])
+    html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], hcode[9], fval[19], hcode[19])
     html += "</table></tt><p>"
-    html = html.replace(" ", "&nbsp;")
     if relstate() == 1:
         html += "Heizung ist ein<br>"
     else:
@@ -71,27 +77,21 @@ def once_a_day(sendmail):
     log.info("main", "once_a_day")
 
     # calculate diff
-    try:
-        for i in range(20):
-            try:
-                if float(values[i]) > float(lval[i]):
-                    diff[i] = "▲"
-                    hcode[i] = "&#9650;"
-                elif float(values[i]) < float(lval[i]):
-                    diff[i] = "▼"
-                    hcode[i] = "&#9660;"
-                else:
-                    diff[i] = "●"
-                    hcode[i] = "&#9679;"
-            except Exception:
-                diff[i] = "-"
-                hcode[i] = "-"
-
-        lval = list(values)
-    except Exception as ex:
-        log.info("main", "error calculate diff: {:s}".format(str(ex)))
-        log.info("main", str(values))
-        log.info("main", str(lval))
+    for i in range(20):
+        try:
+            if float(values[i]) > float(lval[i]):
+                diff[i] = "▲"
+                hcode[i] = "&#9650;"
+            elif float(values[i]) < float(lval[i]):
+                diff[i] = "▼"
+                hcode[i] = "&#9660;"
+            else:
+                diff[i] = "●"
+                hcode[i] = "&#9679;"
+        except Exception:
+            diff[i] = "-"
+            hcode[i] = "-"
+    lval = list(values)
 
     # send mail
     if sendmail == 1:
@@ -117,14 +117,13 @@ def analyze(newline):
     values.insert(19, sin[3])
 
     # format
-    try:
-        for i in range(20):
-            if values[i] != "?":
-                xval = float(values[i])
-                xstr = "{:3.1f}".format(xval)
-                values[i] = xstr
-    except Exception:
-        pass
+    for i in range(20):
+        try:
+            xval = float(values[i])
+            xstr = "{:3.1f}".format(xval)
+            values[i] = xstr
+        except Exception:
+            pass
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))

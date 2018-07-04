@@ -112,8 +112,8 @@ def analyze(newline):
     # sensors
     sin = sensors.read()
     values.insert(8,  sin[0])
-    values.insert(18, sin[1])
     values.insert(9,  sin[2])
+    values.insert(18, sin[1])
     values.insert(19, sin[3])
 
     # format

@@ -54,7 +54,7 @@ def gethtmltable():
     html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], hcode[6], fval[16], hcode[16])
     html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], hcode[7], fval[17], hcode[17])
     html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], hcode[8], fval[18], hcode[18])
-    html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], hcode[9], fval[19], hcode[19])
+#    html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], hcode[9], fval[19], hcode[19])
     html += "</table></tt><p>"
     if relstate() == 1:
         html += "Heizung ist ein<br>"
@@ -136,7 +136,7 @@ def analyze(newline):
     print("Heizung      {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
     print("Büro         {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[7], diff[7], values[17], diff[17]))
     print("Außen        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[8], diff[8], values[18], diff[18]))
-    print("DS1820       {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
+#    print("DS1820       {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
     return
 
 #----------------------------[run_test]
@@ -206,7 +206,8 @@ def main():
     GPIO.init()
     sensors.start()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
-    schedule.every().day.at("12:00").do(once_a_day, 1)
+#    schedule.every().day.at("08:00").do(once_a_day, 1)
+    schedule.every(6).hours.do(once_a_day)
     schedule.every().hour.do(once_a_hour)
 
     # arguments

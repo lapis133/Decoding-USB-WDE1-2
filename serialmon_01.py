@@ -8,18 +8,19 @@ import time
 import sys
 # own modules
 import gpio as GPIO
-import dht22 as DHT
+import sensors
 import webserver
 import mail
 import log
 
 rel_state = 0
 
-line   = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
-values = ["?"] * (16+2)
-lval   = list(values) # last vulues
-diff   = list(values) # diffs
-hcode  = list(values) # html diff
+defline = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
+line    = str(defline)
+values  = ["?"] * (16+4)
+lval    = list(values) # last vulues
+diff    = list(values) # diffs
+hcode   = list(values) # html diff
 
 #----------------------------[relstate]
 def relstate():
@@ -35,17 +36,26 @@ def relupdate(val):
 
 #----------------------------[gethtmltable]
 def gethtmltable():
-    html  = "<table>"
-    html += "<tr align='left'><th>Raum</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchtigkeit</th></tr>"
-    html += "<tr><td>Obergescho&szlig;&nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[0], hcode[0], values[ 8], hcode[ 8])
-    html += "<tr><td>Halle            &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[1], hcode[1], values[ 9], hcode[ 9])
-    html += "<tr><td>Schlafzimmer     &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[2], hcode[2], values[10], hcode[10])
-    html += "<tr><td>Toilette         &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[3], hcode[3], values[11], hcode[11])
-    html += "<tr><td>Badezimmer       &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[4], hcode[4], values[12], hcode[12])
-    html += "<tr><td>K&uuml;che       &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[5], hcode[5], values[13], hcode[13])
-    html += "<tr><td>Heizung          &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[6], hcode[6], values[14], hcode[14])
-    html += "<tr><td>B&uuml;ro        &nbsp;&nbsp</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(values[7], hcode[7], values[15], hcode[15])
-    html += "</table><p>"
+    fval = list(values)
+    for i in range(len(fval)):
+        fval[i] = "{:>5s}".format(values[i])
+        xstr = str(fval[i])
+        xstr = xstr.replace(" ", "&nbsp;")
+        fval[i] = xstr
+
+    html  = "<tt><table>"
+    html += "<tr><th>Raum&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchtigkeit</th></tr>"
+    html += "<tr><td>Obergescho&szlig;</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[0], hcode[0], fval[10], hcode[10])
+    html += "<tr><td>Halle            </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[1], hcode[1], fval[11], hcode[11])
+    html += "<tr><td>Schlafzimmer     </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[2], hcode[2], fval[12], hcode[12])
+    html += "<tr><td>Toilette         </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[3], hcode[3], fval[13], hcode[13])
+    html += "<tr><td>Badezimmer       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[4], hcode[4], fval[14], hcode[14])
+    html += "<tr><td>K&uuml;che       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[5], hcode[5], fval[15], hcode[15])
+    html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], hcode[6], fval[16], hcode[16])
+    html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], hcode[7], fval[17], hcode[17])
+    html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], hcode[8], fval[18], hcode[18])
+    html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], hcode[9], fval[19], hcode[19])
+    html += "</table></tt><p>"
     if relstate() == 1:
         html += "Heizung ist ein<br>"
     else:
@@ -67,15 +77,9 @@ def once_a_day(sendmail):
     log.info("main", "once_a_day")
 
     # calculate diff
-    try:
-        for i in range(16):
-            if lval[i] == "?":
-                lval[i] = values[i]
-
-            if   values[i] == "?":
-                diff[i] = "-"
-                hcode[i] = "-"
-            elif float(values[i]) > float(lval[i]):
+    for i in range(20):
+        try:
+            if float(values[i]) > float(lval[i]):
                 diff[i] = "▲"
                 hcode[i] = "&#9650;"
             elif float(values[i]) < float(lval[i]):
@@ -84,11 +88,10 @@ def once_a_day(sendmail):
             else:
                 diff[i] = "●"
                 hcode[i] = "&#9679;"
-        lval = list(values)
-    except Exception as ex:
-        log.info("main", "error calculate diff: {:s}".format(str(ex)))
-        log.info("main", str(values))
-        log.info("main", str(lval))
+        except Exception:
+            diff[i] = "-"
+            hcode[i] = "-"
+    lval = list(values)
 
     # send mail
     if sendmail == 1:
@@ -106,31 +109,42 @@ def analyze(newline):
     line = line.replace(',', '.')
     values = line.split(";")
 
-    # readdht
-    dht22 = DHT.read()
-    print(dht22)
+    # sensors
+    sin = sensors.read()
+    values.insert(8,  sin[0])
+    values.insert(9,  sin[2])
+    values.insert(18, sin[1])
+    values.insert(19, sin[3])
+
+    # format
+    for i in range(20):
+        try:
+            xval = float(values[i])
+            xstr = "{:3.1f}".format(xval)
+            values[i] = xstr
+        except Exception:
+            pass
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
-    print("Obergeschoß  " + values[0] + "°C " + diff[0] + "   " + values[ 8] + " % " + diff[ 8])
-    print("Halle        " + values[1] + "°C " + diff[1] + "   " + values[ 9] + " % " + diff[ 9])
-    print("Schlafzimmer " + values[2] + "°C " + diff[2] + "   " + values[10] + " % " + diff[10])
-    print("Toilette     " + values[3] + "°C " + diff[3] + "   " + values[11] + " % " + diff[11])
-    print("Badezimmer   " + values[4] + "°C " + diff[4] + "   " + values[12] + " % " + diff[12])
-    print("Küche        " + values[5] + "°C " + diff[5] + "   " + values[13] + " % " + diff[13])
-    print("Heizung      " + values[6] + "°C " + diff[6] + "   " + values[14] + " % " + diff[14])
-    print("Büro         " + values[7] + "°C " + diff[7] + "   " + values[15] + " % " + diff[15])
+    print("Obergeschoß  {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[0], diff[0], values[10], diff[10]))
+    print("Halle        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[1], diff[1], values[11], diff[11]))
+    print("Schlafzimmer {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[2], diff[2], values[12], diff[12]))
+    print("Toilette     {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[3], diff[3], values[13], diff[13]))
+    print("Badezimmer   {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[4], diff[4], values[14], diff[14]))
+    print("Küche        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[5], diff[5], values[15], diff[15]))
+    print("Heizung      {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
+    print("Büro         {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[7], diff[7], values[17], diff[17]))
+    print("Außen        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[8], diff[8], values[18], diff[18]))
+    print("DS1820       {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
     return
 
 #----------------------------[run_test]
 def run_test():
     global lval
 
-    # dht
-    dht22 = DHT.read()
-    print (dht22)
     # check line with ?
-    analyze("$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?")
+    analyze(defline)
     once_a_hour()
     once_a_day(0)
     # check received line
@@ -142,7 +156,7 @@ def run_test():
     lval[0] = "8.8"
     lval[1] = "22.5"
     once_a_hour()
-    once_a_day(0)
+    once_a_day(1)
     analyze("$1;1;;10,1;20,2;30,3;40,4;50,5;60,6;70,7;80,8;90,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7")
     return
 
@@ -156,6 +170,7 @@ def checkarguments():
     if sys.argv[1] == "debug":
         run_test()
         time.sleep(2)
+        sensors.stop()
         webserver.stop()
         log.info("main", "exit (debug)")
         GPIO.cleanup()
@@ -166,8 +181,8 @@ def checkarguments():
         lval[0] = "8.8"
         lval[1] = "22.5"
         once_a_hour()
-        once_a_day()
-        analyze()
+        once_a_day(0)
+        analyze("$1;1;;10,1;20,2;30,3;40,4;50,5;60,6;70,7;80,8;90,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7")
 
     return
 
@@ -181,6 +196,7 @@ def serial_init():
         return ser
     except SerialException:
         GPIO.usb_blink(0)
+        analyze(defline)
         time.sleep(5)
         return None
 
@@ -188,6 +204,7 @@ def serial_init():
 def main():
     # init
     GPIO.init()
+    sensors.start()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
     schedule.every().day.at("08:00").do(once_a_day, 1)
     schedule.every().hour.do(once_a_hour)
@@ -216,5 +233,6 @@ if __name__=='__main__':
         main()
     except:
         GPIO.cleanup()
+        sensors.stop()
         webserver.stop()
         log.info("main", "exit")

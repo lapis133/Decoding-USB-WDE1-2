@@ -1,18 +1,28 @@
-# Decoding-USB-WDE1-2
-The incoming string looks like this:
-```
-$1;1; ;25,9; ;23,8;24,4;24,8;25,4;23,6;23,2;54; ;61;61;60;58;63;63; ; ; ; ; ;0
-```
+# Home temperature observation
+
+Key features of this project are:
+* Decoding USB-WDE1-2
+* Decoding DHT22
+* Decoding DS1822
+* LED status
+* Temperature logging
+* Email notification
+* Webserver
+
 Programm logging is found in /var/log/serialmon_info.log and the received lines in /var/log/serialmon_01.log
 
 ## Preparation
 ```
+sudo apt-get update
 sudo apt-get install python3-serial python3-rpi.gpio python3-pip
 sudo pip3 install schedule
 ```
 
 If using DHT22:
 ```
+sudo apt-get update
+sudo apt-get install build-essential python-dev
+
 git clone https://github.com/adafruit/Adafruit_Python_DHT.git && cd Adafruit_Python_DHT
 sudo python setup.py install
 ```
@@ -32,15 +42,19 @@ python3 serialmon_01.py fakeval
 If already "installed" execute this before running from console:
 ```
 ps -aux | grep  python3 /usr/local/bin/serialmon_01.py
-sudo kill xxx
+sudo kill [pid]
 ```
 
-## Running (DHT22)
+**Running (DHT22)**
 ```
 sudo python serialmon_dht22.py
 ```
+or
+```
+sudo python serialmon_dht22.py &
+```
 
-### optional hardware layout
+## optional hardware layout
 http://rpi.science.uoit.ca/lab/gpio/
 ```
                     USB-Status                              TCP-Status
@@ -66,13 +80,25 @@ http://rpi.science.uoit.ca/lab/gpio/
 
 ## Installation
 ```
-sudo chmod +x install.sh
-./install.sh
+sudo ./install.sh
 ```
 for email notification fill the variables in /usr/local/etc/serialmon_01.ini
 
 add in /etc/rc.local before the last line (exit 0):
 ```
-/usr/local/bin/serialmon_dht22.py &
-/usr/local/bin/serialmon_01.py &
+/usr/local/bin/serialmon/serialmon_dht22.py &
+/usr/local/bin/serialmon/serialmon_01.py &
+```
+
+**If using DS1820:**
+
+add in /etc/modules
+```
+w1-gpio pullup=1
+w1-therm
+```
+
+add in /boot/config.txt
+```
+dtoverlay=w1-gpio,gpiopin=4
 ```

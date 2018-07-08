@@ -80,15 +80,14 @@ http://rpi.science.uoit.ca/lab/gpio/
 
 ## Installation
 ```
-sudo chmod +x install.sh
-./install.sh
+sudo ./install.sh
 ```
 for email notification fill the variables in /usr/local/etc/serialmon_01.ini
 
 add in /etc/rc.local before the last line (exit 0):
 ```
-/usr/local/bin/serialmon_dht22.py &
-/usr/local/bin/serialmon_01.py &
+/usr/local/bin/serialmon/serialmon_dht22.py &
+/usr/local/bin/serialmon/serialmon_01.py &
 ```
 
 **If using DS1820:**

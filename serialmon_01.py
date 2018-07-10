@@ -120,23 +120,26 @@ def analyze(newline):
     for i in range(20):
         try:
             xval = float(values[i])
-            xstr = "{:3.1f}".format(xval)
+            if i < 10:
+                xstr = "{:3.1f}".format(xval)
+            else:
+                xstr = "{:3.0f}".format(xval)
             values[i] = xstr
         except Exception:
             pass
 
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
-    print("Obergeschoß  {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[0], diff[0], values[10], diff[10]))
-    print("Halle        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[1], diff[1], values[11], diff[11]))
-    print("Schlafzimmer {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[2], diff[2], values[12], diff[12]))
-    print("Toilette     {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[3], diff[3], values[13], diff[13]))
-    print("Badezimmer   {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[4], diff[4], values[14], diff[14]))
-    print("Küche        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[5], diff[5], values[15], diff[15]))
-    print("Heizung      {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
-    print("Büro         {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[7], diff[7], values[17], diff[17]))
-    print("Außen        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[8], diff[8], values[18], diff[18]))
-    print("DS1820       {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
+    print("Obergeschoß  {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[0], diff[0], values[10], diff[10]))
+    print("Halle        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[1], diff[1], values[11], diff[11]))
+    print("Schlafzimmer {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[2], diff[2], values[12], diff[12]))
+    print("Toilette     {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[3], diff[3], values[13], diff[13]))
+    print("Badezimmer   {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[4], diff[4], values[14], diff[14]))
+    print("Küche        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[5], diff[5], values[15], diff[15]))
+    print("Heizung      {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
+    print("Büro         {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[7], diff[7], values[17], diff[17]))
+    print("Außen        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[8], diff[8], values[18], diff[18]))
+    print("DS1820       {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
     return
 
 #----------------------------[run_test]

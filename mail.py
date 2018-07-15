@@ -26,8 +26,8 @@ def send(htmltable):
         s = smtplib.SMTP(host, port)
         s.starttls()
         s.login(email, passw)
-    except Exception:
-        log.info("mail", "SMTP error: " + traceback.format_exc())
+    except Exception as e:
+        log.info("mail", "SMTP error: " + str(e))
         return
 
     # prepare email
@@ -50,6 +50,6 @@ def send(htmltable):
         s.quit()
         log.info("mail", "email send")
     except Exception as e:
-        log.info("mail", "SMTP error:" + e)
+        log.info("mail", "SMTP error:" + str(e))
 
     return

@@ -18,6 +18,12 @@ sudo apt-get install python3-serial python3-rpi.gpio python3-pip
 sudo pip3 install schedule
 ```
 
+If using https:
+```
+openssl req -x509 -newkey rsa:2048 -keyout serialmon_01.pem -out serialmon_01.pem -days 730 -nodes -sha256 -subj "/CN=Decoding-USB-WDE1-2"
+sudo chmod +r serialmon_01.pem
+```
+
 If using DHT22:
 ```
 sudo apt-get update

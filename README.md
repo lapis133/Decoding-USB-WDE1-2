@@ -18,6 +18,12 @@ sudo apt-get install python3-serial python3-rpi.gpio python3-pip
 sudo pip3 install schedule
 ```
 
+If using https:
+```
+openssl req -x509 -newkey rsa:2048 -keyout serialmon_01.pem -out serialmon_01.pem -days 730 -nodes -sha256 -subj "/CN=Decoding-USB-WDE1-2"
+sudo chmod +r serialmon_01.pem
+```
+
 If using DHT22:
 ```
 sudo apt-get update
@@ -86,7 +92,7 @@ for email notification fill the variables in /usr/local/etc/serialmon_01.ini
 
 add in /etc/rc.local before the last line (exit 0):
 ```
-/usr/local/bin/serialmon/serialmon_dht22.py &
+/usr/local/bin/serialmon/serialmon_sensor.py &
 /usr/local/bin/serialmon/serialmon_01.py &
 ```
 

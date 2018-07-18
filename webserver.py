@@ -17,13 +17,13 @@ fkt_led = None
 key = ""
 
 #----------------------------[readlog]
-def readlog():
+def readlog(filename):
     log = ""
     try:
-        f = open("/var/log/serialmon_01.log","r")
+        f = open("/var/log/{:s}".format(filename),"r")
     except Exception:
         try:
-            f = open("serialmon_01.log","r")
+            f = open(filename,"r")
         except Exception:
             return "no log found"
 
@@ -52,21 +52,21 @@ class RequestHandler(BaseHTTPRequestHandler):
     def senddata(self, data):
         self.wfile.write(bytes(data, "utf-8"))
 
-    def resp_page(self, logflag):
+    def resp_page(self, filename):
         self.senddata("<!docstype html>")
         self.senddata("<html lang='de'>")
         self.senddata("<head>")
         self.senddata("<meta charset='UTF-8'>")
         self.senddata("<meta name='viewport' content='width=device-width, initial-scale=1'>")
         self.senddata("<title>home temperature observation</title>")
-        if logflag == 0:
+        if filename == "":
             self.senddata("<meta http-equiv='refresh' content='5'>")
         self.senddata("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>")
         self.senddata("</head>")
         self.senddata("<body>")
         self.senddata("<div class='container'>")
         self.senddata("<main>")
-        if logflag == 0:
+        if filename == "":
             self.senddata("<h2><span class='glyphicon glyphicon-tasks' aria-hidden='true'></span> &Uuml;bersicht</h2>")
             self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
             self.senddata(fkt_gethtmltable())
@@ -79,11 +79,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.senddata("</button>")
             self.senddata("</form>")
             self.senddata("<hr>")
-            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='log'>Logfile<span class='glyphicon glyphicon-triangle-right' aria-hidden='true'></span></button></form>")
+            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logtemp'>Temperaturaufzeichnung<span class='glyphicon glyphicon-triangle-right' aria-hidden='true'></span></button></form>")
+            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logsys'>Systemlog<span class='glyphicon glyphicon-triangle-right' aria-hidden='true'></span></button></form>")
         else:
-            self.senddata("<h2><span class='glyphicon glyphicon-file' aria-hidden='true'></span> Logfile</h2>")
+            self.senddata("<h2><span class='glyphicon glyphicon-file' aria-hidden='true'></span> Logfile {:s}</h2>".format(filename))
+            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><span class='glyphicon glyphicon-triangle-left' aria-hidden='true'></span>&Uuml;bersicht</button></form>")
             self.senddata("<p><pre>")
-            self.senddata(readlog())
+            self.senddata(readlog(filename))
             self.senddata("</pre></p>")
             self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><span class='glyphicon glyphicon-triangle-left' aria-hidden='true'></span>&Uuml;bersicht</button></form>")
         self.senddata("</main>")
@@ -92,15 +94,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.senddata("</html>")
 
     def do_GET2(self):
-        log.info("websvr", "do_GET")
         self.resp_header()
         if   self.path == "/":
-            self.resp_page(0)
-        elif self.path == "/log":
-            self.resp_page(1)
+            self.resp_page("")
+        elif self.path == "/logtemp":
+            self.resp_page("serialmon_01.log")
+        elif self.path == "/logsys":
+            self.resp_page("serialmon_info.log")
 
     def do_GET(self):
-        log.info("websvr", "do_GET")
         global key
         if key == "":
             self.do_GET2()
@@ -122,18 +124,20 @@ class RequestHandler(BaseHTTPRequestHandler):
         length = int(content_length[0]) if content_length else 0
         val = str(self.rfile.read(length))
 
-        log.info("websvr", "do_POST: {:s}".format(val))
         self.resp_header()
-        if val.find("relstate") != -1:
+        if val.find("relstate=") != -1:
+            log.info("websvr", "do_POST: {:s}".format(val))
             if fkt_relstate() == 1:
                 fkt_relupdate(0)
             else:
                 fkt_relupdate(1)
-            self.resp_page(0)
-        elif val.find ("log") != -1:
-            self.resp_page(1)
+            self.resp_page("")
+        elif val.find ("logtemp=") != -1:
+            self.resp_page("serialmon_01.log")
+        elif val.find ("logsys=") != -1:
+            self.resp_page("serialmon_info.log")
         else:
-            self.resp_page(0)
+            self.resp_page("")
 
     def do_POST(self):
         global key

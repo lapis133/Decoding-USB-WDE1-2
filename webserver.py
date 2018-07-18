@@ -53,25 +53,45 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytes(data, "utf-8"))
 
     def resp_page(self, logflag):
+        self.senddata("<!docstype html>")
+        self.senddata("<html lang='de'>")
+        self.senddata("<head>")
+        self.senddata("<meta charset='UTF-8'>")
+        self.senddata("<meta name='viewport' content='width=device-width, initial-scale=1'>")
+        self.senddata("<title>home temperature observation</title>")
         if logflag == 0:
-            self.senddata("<html>")
-            self.senddata("<head><title>home temperature observation</title><meta http-equiv='refresh' content='5'></head>")
-            self.senddata("<body><font face='verdana,arial'>")
-            self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
+            self.senddata("<meta http-equiv='refresh' content='5'>")
+        self.senddata("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>")
+        self.senddata("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css' integrity='sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp' crossorigin='anonymous'>")
+        self.senddata("</head>")
+        self.senddata("<body>")
+        self.senddata("<div class='container'>")
+        self.senddata("<main>")
+        if logflag == 0:
+            self.senddata("<h2><span class='glyphicon glyphicon-tasks' aria-hidden='true'></span> &Uuml;bersicht</h2>")
+            self.senddata("<p>{:s}</p><hr>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
             self.senddata(fkt_gethtmltable())
+            self.senddata("<form action='' method='post'>")
+            self.senddata("<button type='submit' class='btn tn-outline-secondary btn-sm' name='relstate'>")
             if fkt_relstate() == 1:
-                self.senddata("<form action='' method='post'><button name='relstate'>Heizung aus</button></form>")
+                self.senddata("Heizung ausschalten <span class='glyphicon glyphicon-ban-circle' aria-hidden='true'></span>")
             else:
-                self.senddata("<form action='' method='post'><button name='relstate'>Heizung ein</button></form>")
-            self.senddata("<form action='' method='post'><button name='log'>Logfile</button></form>")
-            self.senddata("</body>")
+                self.senddata("Heizung einschalten <span class='glyphicon glyphicon-fire' aria-hidden='true'></span>")
+            self.senddata("</button>")
+            self.senddata("</form>")
+            self.senddata("<hr>")
+            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='log'>Logfile</button></form>")
         else:
-            self.senddata("<html>")
-            self.senddata("<head><title>home temperature observation</title></head>")
-            self.senddata("<body><font face='verdana,arial'>")
-            self.senddata("<p>{:s}</p><tt>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
+            self.senddata("<h2><span class='glyphicon glyphicon-file' aria-hidden='true'></span> Logfile</h2>")
+            self.senddata("<hr>")
+            self.senddata("<p><tt>")
             self.senddata(readlog())
-            self.senddata("</tt></body>")
+            self.senddata("</tt></p><hr>")
+            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'>&Uuml;bersicht</button></form>")
+        self.senddata("</main>")
+        self.senddata("</div>")
+        self.senddata("</body>")
+        self.senddata("</html>")
 
     def do_GET2(self):
         log.info("websvr", "do_GET")
@@ -114,6 +134,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.resp_page(0)
         elif val.find ("log") != -1:
             self.resp_page(1)
+        else:
+            self.resp_page(0)
 
     def do_POST(self):
         global key

@@ -43,7 +43,7 @@ def gethtmltable():
         xstr = xstr.replace(" ", "&nbsp;")
         fval[i] = xstr
 
-    html  = "<tt><table>"
+    html  = "<p><tt><table>"
     html += "<tr><th>Raum&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th>Temperatur&nbsp;&nbsp;</th><th>Luftfeuchtigkeit</th></tr>"
     html += "<tr><td>Obergescho&szlig;</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[0], hcode[0], fval[10], hcode[10])
     html += "<tr><td>Halle            </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[1], hcode[1], fval[11], hcode[11])
@@ -55,11 +55,11 @@ def gethtmltable():
     html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], hcode[7], fval[17], hcode[17])
     html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], hcode[8], fval[18], hcode[18])
     html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], hcode[9], fval[19], hcode[19])
-    html += "</table></tt><p>"
+    html += "</table></tt></p><hr>"
     if relstate() == 1:
-        html += "Heizung ist ein<br>"
+        html += "<p>Heizung ist ein</p>"
     else:
-        html += "Heizung ist aus<br>"
+        html += "<p>Heizung ist aus</p>"
     return html
 
 #----------------------------[once_a_hour]

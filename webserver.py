@@ -16,7 +16,7 @@ fkt_led = None
 
 key = ""
 
-#----------------------------[serverthread]
+#----------------------------[readlog]
 def readlog():
     log = ""
     try:
@@ -62,14 +62,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         if logflag == 0:
             self.senddata("<meta http-equiv='refresh' content='5'>")
         self.senddata("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>")
-        self.senddata("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css' integrity='sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp' crossorigin='anonymous'>")
         self.senddata("</head>")
         self.senddata("<body>")
         self.senddata("<div class='container'>")
         self.senddata("<main>")
         if logflag == 0:
             self.senddata("<h2><span class='glyphicon glyphicon-tasks' aria-hidden='true'></span> &Uuml;bersicht</h2>")
-            self.senddata("<p>{:s}</p><hr>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
+            self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
             self.senddata(fkt_gethtmltable())
             self.senddata("<form action='' method='post'>")
             self.senddata("<button type='submit' class='btn tn-outline-secondary btn-sm' name='relstate'>")
@@ -80,14 +79,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.senddata("</button>")
             self.senddata("</form>")
             self.senddata("<hr>")
-            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='log'>Logfile</button></form>")
+            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='log'>Logfile<span class='glyphicon glyphicon-triangle-right' aria-hidden='true'></span></button></form>")
         else:
             self.senddata("<h2><span class='glyphicon glyphicon-file' aria-hidden='true'></span> Logfile</h2>")
-            self.senddata("<hr>")
-            self.senddata("<p><tt>")
+            self.senddata("<p><pre>")
             self.senddata(readlog())
-            self.senddata("</tt></p><hr>")
-            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'>&Uuml;bersicht</button></form>")
+            self.senddata("</pre></p>")
+            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><span class='glyphicon glyphicon-triangle-left' aria-hidden='true'></span>&Uuml;bersicht</button></form>")
         self.senddata("</main>")
         self.senddata("</div>")
         self.senddata("</body>")

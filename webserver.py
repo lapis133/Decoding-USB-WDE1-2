@@ -53,45 +53,48 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytes(data, "utf-8"))
 
     def resp_page(self, filename):
-        self.senddata("<!docstype html>")
-        self.senddata("<html lang='de'>")
-        self.senddata("<head>")
-        self.senddata("<meta charset='UTF-8'>")
-        self.senddata("<meta name='viewport' content='width=device-width, initial-scale=1'>")
-        self.senddata("<title>home temperature observation</title>")
+        html = "<!docstype html>"
+        html += "<html lang='de'>"
+        html += "<head>"
+        html += "<meta charset='UTF-8'>"
+        html += "<meta name='viewport' content='width=device-width, initial-scale=1'>"
+        html += "<title>home temperature observation</title>"
         if filename == "":
-            self.senddata("<meta http-equiv='refresh' content='5'>")
-        self.senddata("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>")
-        self.senddata("</head>")
-        self.senddata("<body>")
-        self.senddata("<div class='container'>")
-        self.senddata("<main>")
+            html += "<meta http-equiv='refresh' content='5'>"
+        html += "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' integrity='sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm' crossorigin='anonymous'>"
+        html += "<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.1.1/css/all.css' integrity='sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ' crossorigin='anonymous'>"
+        #html += "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>"
+        html += "</head>"
+        html += "<body>"
+        html += "<div class='container'>"
+        html += "<main>"
         if filename == "":
-            self.senddata("<h2><span class='glyphicon glyphicon-tasks' aria-hidden='true'></span> &Uuml;bersicht</h2>")
-            self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
-            self.senddata(fkt_gethtmltable())
-            self.senddata("<form action='' method='post'>")
-            self.senddata("<button type='submit' class='btn tn-outline-secondary btn-sm' name='relstate'>")
+            html += "<h2><i class='fas fa-home'></i> &Uuml;bersicht</h2>"
+            html += "<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
+            html += fkt_gethtmltable()
+            html += "<form action='' method='post'>"
+            html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='relstate'>"
             if fkt_relstate() == 1:
-                self.senddata("Heizung ausschalten <span class='glyphicon glyphicon-ban-circle' aria-hidden='true'></span>")
+                html += "Heizung ausschalten <i class='fas fa-ban'></i>"
             else:
-                self.senddata("Heizung einschalten <span class='glyphicon glyphicon-fire' aria-hidden='true'></span>")
-            self.senddata("</button>")
-            self.senddata("</form>")
-            self.senddata("<hr>")
-            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logtemp'>Temperaturaufzeichnung<span class='glyphicon glyphicon-triangle-right' aria-hidden='true'></span></button></form>")
-            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logsys'>Systemlog<span class='glyphicon glyphicon-triangle-right' aria-hidden='true'></span></button></form>")
+                html += "Heizung einschalten <i class='fas fa-fire'></i>"
+            html += "</button>"
+            html += "</form>"
+            html += "<hr>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logtemp'>Temperaturaufzeichnung <i class='fas fa-caret-right'></i></button></form>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logsys'>Systemlog <i class='fas fa-caret-right'></i></button></form>"
         else:
-            self.senddata("<h2><span class='glyphicon glyphicon-file' aria-hidden='true'></span> Logfile {:s}</h2>".format(filename))
-            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><span class='glyphicon glyphicon-triangle-left' aria-hidden='true'></span>&Uuml;bersicht</button></form>")
-            self.senddata("<p><pre>")
-            self.senddata(readlog(filename))
-            self.senddata("</pre></p>")
-            self.senddata("<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><span class='glyphicon glyphicon-triangle-left' aria-hidden='true'></span>&Uuml;bersicht</button></form>")
-        self.senddata("</main>")
-        self.senddata("</div>")
-        self.senddata("</body>")
-        self.senddata("</html>")
+            html += "<h2><i class='fas fa-file'></i> Logfile {:s}</h2>".format(filename)
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><i class='fas fa-caret-left'></i> &Uuml;bersicht</button></form>"
+            html += "<p><pre>"
+            html += readlog(filename)
+            html += "</pre></p>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><i class='fas fa-caret-left'></i> &Uuml;bersicht</button></form>"
+        html += "</main>"
+        html += "</div>"
+        html += "</body>"
+        html += "</html>"
+        self.senddata(html)
 
     def do_GET2(self):
         self.resp_header()

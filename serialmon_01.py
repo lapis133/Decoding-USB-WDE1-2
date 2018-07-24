@@ -22,6 +22,7 @@ values  = ["?"] * (16+4)
 lval    = list(values) # last vulues
 diff    = list(values) # diffs
 hcode   = list(values) # html diff
+ds1820  = False
 
 #----------------------------[relstate]
 def relstate():
@@ -55,7 +56,8 @@ def gethtmltable():
     html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], hcode[6], fval[16], hcode[16])
     html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], hcode[7], fval[17], hcode[17])
     html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], hcode[8], fval[18], hcode[18])
-    html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], hcode[9], fval[19], hcode[19])
+    if ds1820 == True:
+        html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], hcode[9], fval[19], hcode[19])
     html += "</table></pre></p>"
     if relstate() == 1:
         html += "<p>Heizung ist ein</p>"
@@ -140,7 +142,8 @@ def analyze(newline):
     print("Heizung      {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
     print("Büro         {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[7], diff[7], values[17], diff[17]))
     print("Außen        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[8], diff[8], values[18], diff[18]))
-    print("DS1820       {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
+    if ds1820 == True:
+        print("DS1820       {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
     return
 
 #----------------------------[run_test]
@@ -206,6 +209,8 @@ def serial_init():
 
 #----------------------------[main]
 def main():
+    global ds1820
+
     # config
     config = configparser.ConfigParser()
     config.read('/usr/local/etc/serialmon_01.ini')
@@ -213,11 +218,15 @@ def main():
         mail_oad = config["EMAIL"]["SEND_ONCE_A_DAY"]
         mail_int = config["EMAIL"]["SEND_INTERVAL"]
         log_int  = config["LOGGING"]["INTERVAL"]
+        ds_val   = config["LOGGING"]["DS1820"]
     except KeyError:
         mail_oad = ""
         mail_int = ""
         log_int  = ""
+        ds_val   = ""
         log.info("main", "serialmon_01.ini not filled")
+    if ds_val.upper() == "YES":
+        ds1820 = True
 
     # init
     GPIO.init()

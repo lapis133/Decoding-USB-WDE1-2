@@ -6,6 +6,7 @@ import serial
 from serial import SerialException
 import time
 import sys
+import configparser
 # own modules
 import gpio as GPIO
 import sensors
@@ -205,12 +206,36 @@ def serial_init():
 
 #----------------------------[main]
 def main():
+    # config
+    config = configparser.ConfigParser()
+    config.read('/usr/local/etc/serialmon_01.ini')
+    try:
+        mail_oad = config["EMAIL"]["SEND_ONCE_A_DAY"]
+        mail_int = config["EMAIL"]["SEND_INTERVAL"]
+        log_int  = config["LOGGING"]["INTERVAL"]
+    except KeyError:
+        mail_oad = ""
+        mail_int = ""
+        log_int  = ""
+        log.info("main", "serialmon_01.ini not filled")
+
     # init
     GPIO.init()
     sensors.start()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
-    schedule.every().day.at("08:00").do(once_a_day, 1)
-    schedule.every().hour.do(once_a_hour)
+    try:
+        if mail_oad != "":
+            schedule.every().day.at(mail_oad).do(once_a_day, 1)
+        if   mail_int == "1":
+            schedule.every().hour.do(once_a_day, 1)
+        elif mail_int != "":
+            schedule.every(mail_int).hours.do(once_a_day, 1)
+        if   log_int == "1":
+            schedule.every().hour.do(once_a_hour)
+        elif log_int != "":
+            schedule.every(log_int).hours.do(once_a_hour)
+    except Exception as e:
+        log.info("main", "serialmon_01.ini: " + str(e))
 
     # arguments
     checkarguments()

@@ -51,7 +51,7 @@ sudo python serialmon_sensor.py
 ```
 or
 ```
-sudo python serialmon_dht22.py &
+sudo python serialmon_sensor.py &
 ```
 
 ## optional hardware layout

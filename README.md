@@ -47,7 +47,7 @@ sudo kill [pid]
 
 **Running (DHT22)**
 ```
-sudo python serialmon_dht22.py
+sudo python serialmon_sensor.py
 ```
 or
 ```
@@ -87,7 +87,7 @@ for email notification fill the variables in /usr/local/etc/serialmon_01.ini
 
 add in /etc/rc.local before the last line (exit 0):
 ```
-/usr/local/bin/serialmon_dht22.py &
+/usr/local/bin/serialmon_sensor.py &
 /usr/local/bin/serialmon_01.py &
 ```
 

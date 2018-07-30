@@ -120,11 +120,13 @@ def analyze(newline):
     for i in range(20):
         try:
             xval = float(values[i])
-            xstr = "{:3.1f}".format(xval)
+            if i < 10:
+                xstr = "{:3.1f}".format(xval)
+            else:
+                xstr = "{:3.0f}".format(xval)
             values[i] = xstr
         except Exception:
-            pass
-
+pass
     # output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
     print("Obergeschoß  {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[0], diff[0], values[10], diff[10]))

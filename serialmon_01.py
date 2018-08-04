@@ -212,7 +212,7 @@ def main():
     schedule.every(3).hours.do(once_a_day, 1)
     schedule.every(2).hours.do(once_a_hour)
 
-    # --------------------arguments
+    # --------------------arguments---Debug or Fakeval-----
     checkarguments()
 
     # ---------------------running

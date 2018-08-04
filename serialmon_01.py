@@ -18,9 +18,9 @@ rel_state = 0
 defline = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 line    = str(defline)
 values  = ["?"] * (16+4)
-lval    = list(values) # last vulues
-diff    = list(values) # diffs
-hcode   = list(values) # html diff
+lval    = list(values) # -----------last values
+diff    = list(values) # -----------diffs
+hcode   = list(values) # ---------html diff
 
 #----------------[Subroutine]------[relstate]
 def relstate():

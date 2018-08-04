@@ -6,13 +6,13 @@ import serial
 from serial import SerialException
 import time
 import sys
-# own modules
+#--------------------------own modules
 import gpio as GPIO
 import sensors
 import webserver
 import mail
 import log
-
+#--------------------------definitions
 rel_state = 0
 
 defline = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
@@ -22,7 +22,7 @@ lval    = list(values) # last vulues
 diff    = list(values) # diffs
 hcode   = list(values) # html diff
 
-#----------------------------[relstate]
+#----------------[Subroutine]------[relstate]
 def relstate():
     return rel_state
 
@@ -68,7 +68,7 @@ def once_a_hour():
     log.line(line)
     return
 
-#----------------------------[once_a_day]
+#-----------------------------------[once_a_day]
 def once_a_day(sendmail):
     global lval
     global hcode
@@ -76,7 +76,7 @@ def once_a_day(sendmail):
 
     log.info("main", "once_a_day")
 
-    # calculate diff
+    # -----------------------------calculate diff
     for i in range(20):
         try:
             if float(values[i]) > float(lval[i]):
@@ -93,30 +93,30 @@ def once_a_day(sendmail):
             hcode[i] = "-"
     lval = list(values)
 
-    # send mail
+    # -----------------------------send mail
     if sendmail == 1:
         mail.send(gethtmltable())
     return
 
-#----------------------------[analyze]
+#----------------------------------[analyze]
 def analyze(newline):
     global values
     global line
 
-    # format and split
+    # ----------------------------format and split
     line = newline
     line = line.replace("$1;1;;", "")
     line = line.replace(',', '.')
     values = line.split(";")
 
-    # sensors
+    # ---------------------------------sensors
     sin = sensors.read()
     values.insert(8,  sin[0])
     values.insert(9,  sin[2])
     values.insert(18, sin[1])
     values.insert(19, sin[3])
 
-    # format
+    # ---------------------------------format
     for i in range(20):
         try:
             xval = float(values[i])
@@ -127,7 +127,7 @@ def analyze(newline):
             values[i] = xstr
         except Exception:
             pass
-    # output
+    # ---------------------------------output
     print(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
     print("Obergeschoß  {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[0], diff[0], values[10], diff[10]))
     print("Halle        {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[1], diff[1], values[11], diff[11]))
@@ -141,7 +141,7 @@ def analyze(newline):
 #    print("DS1820       {:>5s} °C {:s}   {:>5s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
     return
 
-#----------------------------[run_test]
+#---------------------------------------[run_test]
 def run_test():
     global lval
 
@@ -149,11 +149,11 @@ def run_test():
     analyze(defline)
     once_a_hour()
     once_a_day(0)
-    # check received line
+    # ------------------------------check received line
     analyze("$1;1;;10,1;20,2;30,3;40,4;50,5;60,6;70,7;80,8;90,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7")
     once_a_hour()
     once_a_day(0)
-    # check diffs
+    # ----------------------------------check diffs
     lval = list(values)
     lval[0] = "8.8"
     lval[1] = "22.5"
@@ -162,7 +162,7 @@ def run_test():
     analyze("$1;1;;10,1;20,2;30,3;40,4;50,5;60,6;70,7;80,8;90,9;10,1;11,2;12,3;13,4;14,5;15,6;16,7")
     return
 
-#----------------------------[checkarguments]
+#----------------------------------------[checkarguments]
 def checkarguments():
     global lval
 
@@ -188,7 +188,7 @@ def checkarguments():
 
     return
 
-#----------------------------[serial_init]
+#----------------------------------------[serial_init]
 def serial_init():
     GPIO.usb_status(0)
     try:
@@ -202,9 +202,9 @@ def serial_init():
         time.sleep(5)
         return None
 
-#----------------------------[main]
+#-------------------------------------------[main]
 def main():
-    # init
+    # -----------------------init
     GPIO.init()
     sensors.start()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
@@ -212,10 +212,10 @@ def main():
     schedule.every(3).hours.do(once_a_day, 1)
     schedule.every(2).hours.do(once_a_hour)
 
-    # arguments
+    # --------------------arguments
     checkarguments()
 
-    # running
+    # ---------------------running
     ser = None
     while True:
         if ser == None:

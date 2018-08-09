@@ -252,15 +252,20 @@ def main():
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)
     try:
         if mail_oad != "":
+            log.info("main", "email: once a day at {:s}".format(mail_oad))
             schedule.every().day.at(mail_oad).do(once_a_day, 1)
         if   mail_int == "1":
+            log.info("main", "email: every hour")
             schedule.every().hour.do(once_a_day, 1)
         elif mail_int != "":
-            schedule.every(mail_int).hours.do(once_a_day, 1)
+            log.info("main", "email: every {:s} hours".format(mail_int))
+            schedule.every(int(mail_int)).hours.do(once_a_day, 1)
         if   log_int == "1":
+            log.info("main", "logging: every hour")
             schedule.every().hour.do(once_a_hour)
         elif log_int != "":
-            schedule.every(log_int).hours.do(once_a_hour)
+            log.info("main", "logging: every {:s} hours".format(log_int))
+            schedule.every(int(log_int)).hours.do(once_a_hour)
     except Exception as e:
         log.info("main", "serialmon_01.ini: " + str(e))
 

@@ -36,6 +36,7 @@ def reltimer():
 #----------------------------[relupdate]
 def relupdate(val):
     global rel_state
+    global rel_timer
 
     rel_state = val
     GPIO.relay(rel_state)
@@ -44,14 +45,16 @@ def relupdate(val):
 
 #----------------------------[gethtmltable]
 def gethtmltable(showicons):
-    xcode = hcode
+    xcode = list(hcode)
     fval = list(values)
     for i in range(len(fval)):
         fval[i] = "{:>5s}".format(values[i])
         xstr = str(fval[i])
         xstr = xstr.replace(" ", "&nbsp;")
         fval[i] = xstr
-        if showicons == False:
+
+    if showicons == False:
+        for i in range(len(xcode)):
             xcode[i] = ""
 
     html  = "<p><pre><table>"

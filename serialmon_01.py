@@ -15,6 +15,7 @@ import mail
 import log
 
 rel_state = 0
+rel_timer = time.time()
 
 defline = "$1;1;;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?;?"
 line    = str(defline)
@@ -28,12 +29,17 @@ ds1820  = False
 def relstate():
     return rel_state
 
+#----------------------------[reltimer]
+def reltimer():
+    return rel_timer
+
 #----------------------------[relupdate]
 def relupdate(val):
     global rel_state
 
     rel_state = val
     GPIO.relay(rel_state)
+    rel_timer = time.time()
     return
 
 #----------------------------[gethtmltable]
@@ -63,7 +69,8 @@ def gethtmltable(showicons):
         html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], xcode[9], fval[19], xcode[19])
     html += "</table></pre></p>"
     if relstate() == 1:
-        html += "<p>Heizung ist ein</p>"
+        rest = int(60*60 - (time.time() - reltimer()))
+        html += "<p>Heizung ist ein (noch {:d}m {:d}s)</p>".format(int(rest / 60), int(rest % 60))
     else:
         html += "<p>Heizung ist aus</p>"
     return html
@@ -269,6 +276,9 @@ def main():
                 newline = str(ser.readline(), "utf-8")
                 analyze(newline)
                 GPIO.usb_blink(1)
+        if relstate() == 1:
+            if (time.time() - reltimer()) >= 60*60:
+                relupdate(0)
         schedule.run_pending()
 
 #----------------------------[]

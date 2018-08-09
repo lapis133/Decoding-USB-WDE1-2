@@ -6,3 +6,4 @@ sudo cp *.py /usr/local/bin/serialmon
 sudo chmod +x /usr/local/bin/serialmon/serialmon_01.py
 sudo chmod +x /usr/local/bin/serialmon/serialmon_sensor.py
 sudo rm /var/log/serialmon_info.log
+sudo reboot

@@ -68,7 +68,12 @@ def gethtmltable():
 #----------------------------[once_a_hour]
 def once_a_hour():
     log.info("main", "once_a_hour")
-    log.line(line)
+
+    logline = ""
+    for val in values:
+        logline += str(val) + ";"
+    logline = logline.replace(' ', '')
+    log.line(logline)
     return
 
 #----------------------------[once_a_day]

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 import configparser
 import log
 import threading
@@ -160,6 +161,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                 pass
 
 #----------------------------[serverthread]
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """ This class allows to handle requests in separated threads.
+        No further content needed, don't touch this. """
+
+#----------------------------[serverthread]
 def serverthread():
     global hsvr
     global key
@@ -188,7 +194,7 @@ def serverthread():
     # start
     while True:
         try:
-            hsvr = HTTPServer(("", 4711), RequestHandler)
+            hsvr = ThreadedHTTPServer(("", 4711), RequestHandler)
         except Exception:
             time.sleep(1)
 

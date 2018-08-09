@@ -72,7 +72,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         if filename == "":
             html += "<h2><i class='fas fa-home'></i> &Uuml;bersicht</h2>"
             html += "<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
-            html += fkt_gethtmltable()
+            html += fkt_gethtmltable(False)
             html += "<form action='' method='post'>"
             html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='relstate'>"
             if fkt_relstate() == 1:

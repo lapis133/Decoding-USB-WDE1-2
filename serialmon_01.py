@@ -37,27 +37,30 @@ def relupdate(val):
     return
 
 #----------------------------[gethtmltable]
-def gethtmltable():
+def gethtmltable(showicons):
+    xcode = hcode
     fval = list(values)
     for i in range(len(fval)):
         fval[i] = "{:>5s}".format(values[i])
         xstr = str(fval[i])
         xstr = xstr.replace(" ", "&nbsp;")
         fval[i] = xstr
+        if showicons == False:
+            xcode[i] = ""
 
     html  = "<p><pre><table>"
     html += "<tr><th>Raum</th><th>Temperatur</th><th>&nbsp;&nbsp;Luftfeuchte</th></tr>"
-    html += "<tr><td>Obergescho&szlig;</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[0], hcode[0], fval[10], hcode[10])
-    html += "<tr><td>Halle            </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[1], hcode[1], fval[11], hcode[11])
-    html += "<tr><td>Schlafzimmer     </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[2], hcode[2], fval[12], hcode[12])
-    html += "<tr><td>Toilette         </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[3], hcode[3], fval[13], hcode[13])
-    html += "<tr><td>Badezimmer       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[4], hcode[4], fval[14], hcode[14])
-    html += "<tr><td>K&uuml;che       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[5], hcode[5], fval[15], hcode[15])
-    html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], hcode[6], fval[16], hcode[16])
-    html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], hcode[7], fval[17], hcode[17])
-    html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], hcode[8], fval[18], hcode[18])
+    html += "<tr><td>Obergescho&szlig;</td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[0], xcode[0], fval[10], xcode[10])
+    html += "<tr><td>Halle            </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[1], xcode[1], fval[11], xcode[11])
+    html += "<tr><td>Schlafzimmer     </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[2], xcode[2], fval[12], xcode[12])
+    html += "<tr><td>Toilette         </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[3], xcode[3], fval[13], xcode[13])
+    html += "<tr><td>Badezimmer       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[4], xcode[4], fval[14], xcode[14])
+    html += "<tr><td>K&uuml;che       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[5], xcode[5], fval[15], xcode[15])
+    html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], xcode[6], fval[16], xcode[16])
+    html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], xcode[7], fval[17], xcode[17])
+    html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], xcode[8], fval[18], xcode[18])
     if ds1820 == True:
-        html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], hcode[9], fval[19], hcode[19])
+        html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], xcode[9], fval[19], xcode[19])
     html += "</table></pre></p>"
     if relstate() == 1:
         html += "<p>Heizung ist ein</p>"
@@ -103,7 +106,7 @@ def once_a_day(sendmail):
 
     # send mail
     if sendmail == 1:
-        mail.send(gethtmltable())
+        mail.send(gethtmltable(True))
     return
 
 #----------------------------[analyze]

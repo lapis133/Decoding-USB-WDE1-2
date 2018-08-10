@@ -9,13 +9,38 @@ import time
 import base64
 import ssl
 
-hsvr = None
+s_hsvr = None
+s_key  = ""
 fkt_gethtmltable = None
-fkt_relstate = None
-fkt_relupdate = None
-fkt_led = None
+fkt_relstate     = None
+fkt_relupdate    = None
+fkt_led          = None
 
-key = ""
+FAVICON = b"AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAB\
+            ILAAASCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjAA\
+            AATQAAAE0AAABNAAAAOAAAAAAAAAAAAAAAOAAAAE0AAABNAAAATQAAACMAAAAA\
+            AAAAAAAAAAAAAAAAAAAAtAAAAP8AAAD/AAAA/wAAALoAAAAAAAAAAAAAALoAAA\
+            D/AAAA/wAAAP8AAAC0AAAAAAAAAAAAAAAAAAAAAAAAALcAAAD/AAAA/wAAAP8A\
+            AAC6AAAAAAAAAAAAAAC6AAAA/wAAAP8AAAD/AAAAtwAAAAAAAAAAAAAAAAAAAA\
+            AAAAC3AAAA/wAAAP8AAAD/AAAAugAAAAAAAAAAAAAAugAAAP8AAAD/AAAA/wAA\
+            ALcAAAAAAAAAAAAAAAAAAAAAAAAAtwAAAP8AAAD/AAAA/wAAANwAAAB/AAAAfw\
+            AAANwAAAD/AAAA/wAAAP8AAAC3AAAAAAAAAAAAAAAEAAAAAgAAALcAAAD/AAAA\
+            /wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAAtwAAAAIAAAAEAA\
+            AAsAAAAK8AAABbAAAA8wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/\
+            AAAA8wAAAFsAAACvAAAAsAAAAIkAAAD+AAAA0AAAAE8AAADfAAAA/wAAAP8AAA\
+            D/AAAA/wAAAP8AAAD/AAAA3wAAAE8AAADQAAAA/gAAAIkAAAAAAAAAXwAAAPgA\
+            AADoAAAAUAAAAMIAAAD/AAAA/wAAAP8AAAD/AAAAwgAAAFEAAADoAAAA+AAAAF\
+            8AAAAAAAAAAAAAAAAAAAA7AAAA6AAAAPcAAABlAAAAmwAAAP8AAAD/AAAAmwAA\
+            AGUAAAD3AAAA/wAAALcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAADRAAAA/g\
+            AAAIkAAABwAAAAcAAAAIkAAAD+AAAA/wAAAP8AAAC3AAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAADQAAAK8AAAD/AAAAsQAAALEAAAD/AAAArgAAANwAAAD/AA\
+            AAtwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAhwAAAP4AAAD+\
+            AAAAhwAAAAIAAADSAAAA/wAAALcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAABDAAAAQwAAAAAAAAAAAAAASgAAAGAAAABAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAAAAAAAA//8AAMGDAADBgwAAwYMAAMGDAADAAwAAAAAAAAAA\
+            AAAAAAAAAAAAAMADAADgAwAA8AMAAPgDAAD8IwAA//8AAA=="
 
 #----------------------------[readlog]
 def readlog(filename):
@@ -97,24 +122,30 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.senddata(html)
 
     def do_GET2(self):
-        self.resp_header()
-        if   self.path == "/":
-            self.resp_page("")
-        elif self.path == "/logtemp":
-            self.resp_page("serialmon_01.log")
-        elif self.path == "/logsys":
-            self.resp_page("serialmon_info.log")
+        if self.path == "/favicon.ico":
+            self.send_response(200)
+            self.send_header('Content-type', 'image/gif')
+            self.end_headers()
+            self.wfile.write(base64.b64decode(FAVICON))
+        else:
+            self.resp_header()
+            if   self.path == "/":
+                self.resp_page("")
+            elif self.path == "/logtemp":
+                self.resp_page("serialmon_01.log")
+            elif self.path == "/logsys":
+                self.resp_page("serialmon_info.log")
 
     def do_GET(self):
-        global key
-        if key == "":
+        global s_key
+        if s_key == "":
             self.do_GET2()
         else:
             if self.headers.get('Authorization') == None:
                 self.resp_auth()
                 self.senddata("no auth header received")
                 pass
-            elif self.headers.get('Authorization') == "Basic "+key:
+            elif self.headers.get('Authorization') == "Basic "+s_key:
                 self.do_GET2()
                 pass
             else:
@@ -143,15 +174,15 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.resp_page("")
 
     def do_POST(self):
-        global key
-        if key == "":
+        global s_key
+        if s_key == "":
             self.do_POST2()
         else:
             if self.headers.get('Authorization') == None:
                 self.resp_auth()
                 self.senddata("no auth header received")
                 pass
-            elif self.headers.get('Authorization') == "Basic "+key:
+            elif self.headers.get('Authorization') == "Basic "+s_key:
                 self.do_POST2()
                 pass
             else:
@@ -166,7 +197,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 #----------------------------[serverthread]
 def serverthread():
-    global hsvr
+    global s_hsvr
     global key
 
     log.info("websvr", "init")
@@ -193,7 +224,7 @@ def serverthread():
     # start
     while True:
         try:
-            hsvr = ThreadedHTTPServer(("", 4711), RequestHandler)
+            s_hsvr = ThreadedHTTPServer(("", 4711), RequestHandler)
         except Exception:
             time.sleep(1)
 
@@ -201,11 +232,11 @@ def serverthread():
             f = open("/usr/local/etc/serialmon_01.pem","r")
             f.close()
             try:
-                hsvr.socket = ssl.wrap_socket(hsvr.socket, server_side=True, certfile="/usr/local/etc/serialmon_01.pem", ssl_version=ssl.PROTOCOL_TLSv1)
+                s_hsvr.socket = ssl.wrap_socket(s_hsvr.socket, server_side=True, certfile="/usr/local/etc/serialmon_01.pem", ssl_version=ssl.PROTOCOL_TLSv1)
                 break
             except Exception as e:
                 print (str(e))
-                hsvr.server_close()
+                s_hsvr.server_close()
                 time.sleep(1)
         except Exception:
             log.info("websvr", "https is disabled")
@@ -215,17 +246,17 @@ def serverthread():
     log.info("websvr", "started")
     fkt_led(1)
     try:
-        hsvr.serve_forever()
+        s_hsvr.serve_forever()
     except KeyboardInterrupt:
-        hsvr.server_close()
+        s_hsvr.server_close()
     log.info("websvr", "stop")
     return
 
 #----------------------------[stop]
 def stop():
-    global hsvr
-    if hsvr != None:
-        hsvr.shutdown()
+    global s_hsvr
+    if s_hsvr != None:
+        s_hsvr.shutdown()
     return
 
 #----------------------------[start]

@@ -43,7 +43,7 @@ FAVICON = b"AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAB\
             AAAAAAAAAAAAAMADAADgAwAA8AMAAPgDAAD8IwAA//8AAA=="
 
 #----------------------------[readlog]
-def readlog(filename):
+def readlog(filename, compareidx):
     log = ""
     try:
         f = open("/var/log/{:s}".format(filename),"r")
@@ -58,8 +58,19 @@ def readlog(filename):
         if not rl:
             break;
         line = str(rl)
-        log += line.replace('\n', "<br>")
+        if compareidx > 0:
+            values = line.split(";")
+            try:
+                tval = values[0]
+                temp = values[compareidx]
+                humi = values[compareidx+10]
+                log += "{:s} {:>5s} &deg;C {:>5s} %<br>".format(tval, temp, humi)
+            except Exception:
+                log += "-<br>"
+        else:
+            log += line.replace('\n', "<br>")
 
+    log = log.replace("<br><br>", "<br>")
     return log
 
 #----------------------------[MyServer]
@@ -75,10 +86,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
+    def resp_location(self, path):
+        self.send_response(302)
+        self.send_header('Location', path)
+        self.end_headers()
+
     def senddata(self, data):
         self.wfile.write(bytes(data, "utf-8"))
 
-    def resp_page(self, filename):
+    def resp_page(self, filename, compareidx):
         html = "<!docstype html>"
         html += "<html lang='de'>"
         html += "<head>"
@@ -106,15 +122,40 @@ class RequestHandler(BaseHTTPRequestHandler):
             html += "</button>"
             html += "</form>"
             html += "<hr>"
-            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logtemp'>Temperaturaufzeichnung <i class='fas fa-caret-right'></i></button></form>"
-            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logsys'>Systemlog <i class='fas fa-caret-right'></i></button></form>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'>Logfiles <i class='fas fa-caret-right'></i></button></form>"
+        elif filename == "logfiles":
+            html += "<h2><i class='fas fa-file'></i> Logfiles</h2>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><i class='fas fa-caret-left'></i> &Uuml;bersicht</button></form>"
+            html += "<hr>"
+            html += "Temperaturaufzeichnung<br>"
+            html += "<form action='' method='post'>"
+            html += "<div class='btn-group-vertical'>"
+            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log1'>Obergescho&szlig;</button></form>"
+            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='log2'>Halle</button></form>"
+            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log3'>Schlafzimmer</button></form>"
+            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='log4'>Toilette</button></form>"
+            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log5'>Badezimmer</button></form>"
+            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='log6'>K&uuml;che</button></form>"
+            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log7'>Heizung</button></form>"
+            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='log8'>B&uuml;ro</button></form>"
+            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log9'>Au&szlig;en</button>"
+            html += "</div>"
+            html += "</form>"
+            html += "<hr>"
+            html += "Gesamt<br>"
+            html += "<form action='' method='post'>"
+            html += "<div class='btn-group-vertical'>"
+            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log0'>Temperatur</button></form>"
+            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='logsys'>System</button></form>"
+            html += "</div>"
+            html += "</form>"
         else:
             html += "<h2><i class='fas fa-file'></i> Logfile {:s}</h2>".format(filename)
-            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><i class='fas fa-caret-left'></i> &Uuml;bersicht</button></form>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Auswahl</button></form>"
             html += "<p><pre>"
-            html += readlog(filename)
+            html += readlog(filename, compareidx)
             html += "</pre></p>"
-            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><i class='fas fa-caret-left'></i> &Uuml;bersicht</button></form>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Auswahl</button></form>"
         html += "</main>"
         html += "</div>"
         html += "</body>"
@@ -128,13 +169,16 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(base64.b64decode(FAVICON))
         else:
+            path = str(self.path)
             self.resp_header()
-            if   self.path == "/":
-                self.resp_page("")
-            elif self.path == "/logtemp":
-                self.resp_page("serialmon_01.log")
+            if self.path == "/logfiles":
+                self.resp_page("logfiles", 0)
             elif self.path == "/logsys":
-                self.resp_page("serialmon_info.log")
+                self.resp_page("serialmon_info.log", 0)
+            elif path[:4] == "/log" and len(path) >= 5:
+                self.resp_page("serialmon_01.log", int(path[4]))
+            else:
+                self.resp_page("", 0)
 
     def do_GET(self):
         global s_key
@@ -157,21 +201,25 @@ class RequestHandler(BaseHTTPRequestHandler):
         content_length = self.headers.get('content-length')
         length = int(content_length[0]) if content_length else 0
         val = str(self.rfile.read(length))
-
-        self.resp_header()
         if val.find("relstate=") != -1:
             log.info("websvr", "do_POST: {:s}".format(val))
             if fkt_relstate() == 1:
                 fkt_relupdate(0)
             else:
                 fkt_relupdate(1)
-            self.resp_page("")
-        elif val.find ("logtemp=") != -1:
-            self.resp_page("serialmon_01.log")
+            self.resp_location("/")
+        elif val.find ("logfiles=") != -1:
+            self.resp_location("/logfiles")
         elif val.find ("logsys=") != -1:
-            self.resp_page("serialmon_info.log")
+            self.resp_location("/logsys")
         else:
-            self.resp_page("")
+            pos = val.find("log")
+            if   pos != -1:
+                if pos + 4 < len(val):
+                    log.info("websvr", "get {:s} [{:s}]".format(val, self.address_string()))
+                    self.resp_location(val[pos:pos+4])
+                    return
+            self.resp_location("/")
 
     def do_POST(self):
         global s_key

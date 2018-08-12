@@ -42,6 +42,32 @@ FAVICON = b"AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAB\
             AAAAAAAAAAAAAAAAAAAAAA//8AAMGDAADBgwAAwYMAAMGDAADAAwAAAAAAAAAA\
             AAAAAAAAAAAAAMADAADgAwAA8AMAAPgDAAD8IwAA//8AAA=="
 
+#----------------------------[preparechart]
+def preparechart():
+    return "\
+<script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>\r\n\
+<script type='text/javascript'>\r\n\
+    google.charts.load('current', {'packages':['corechart']});\r\n\
+    google.charts.setOnLoadCallback(drawChart);\r\n\
+    function drawChart() {\r\n\
+    var data = google.visualization.arrayToDataTable([\r\n\
+        ['Datum', 'Temperatur', 'Luftfeutchte'],\r\n\
+        *DATA*\r\n\
+    ]);\r\n\
+    \r\n\
+    var options = {\r\n\
+        title: 'Verlauf',\r\n\
+        curveType: 'function',\r\n\
+        legend: { position: 'bottom' },\r\n\
+        series: { 0: {targetAxisIndex: 0}, 1: {targetAxisIndex: 1} },\r\n\
+        vAxes: { 0: {title: 'Temps (Celsius)'}, 1: {title: 'Daylight'} }\r\n\
+    };\r\n\
+    \r\n\
+    var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));\r\n\
+    chart.draw(data, options);\r\n\
+    }\r\n\
+</script>\r\n"
+
 #----------------------------[readlog]
 def readlog(filename, compareidx):
     log = ""
@@ -51,7 +77,13 @@ def readlog(filename, compareidx):
         try:
             f = open(filename,"r")
         except Exception:
-            return "no log found"
+            return "no log found", ""
+
+    if compareidx > 0:
+        js = preparechart()
+    else:
+        js = ""
+    data = ""
 
     while True:
         rl = f.readline()
@@ -65,13 +97,22 @@ def readlog(filename, compareidx):
                 temp = values[compareidx]
                 humi = values[compareidx+10]
                 log += "{:s} {:>5s} &deg;C {:>5s} %<br>".format(tval, temp, humi)
+                try:
+                    x = float(temp)
+                    x = float(humi)
+                    data += "['{:s}', {:s}, {:s}],\r\n".format(tval, temp, humi)
+                except:
+                    pass
             except Exception:
                 log += "-<br>"
         else:
             log += line.replace('\n', "<br>")
 
-    log = log.replace("<br><br>", "<br>")
-    return log
+    log   = log.replace("<br><br>", "<br>")
+    data  = data.strip(',\r\n')
+    data += "\r\n"
+    js    = js.replace("*DATA*", data)
+    return log, js
 
 #----------------------------[MyServer]
 class RequestHandler(BaseHTTPRequestHandler):
@@ -95,23 +136,28 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytes(data, "utf-8"))
 
     def resp_page(self, filename, compareidx):
-        html = "<!docstype html>"
-        html += "<html lang='de'>"
-        html += "<head>"
-        html += "<meta charset='UTF-8'>"
-        html += "<meta name='viewport' content='width=device-width, initial-scale=1'>"
-        html += "<title>home temperature observation</title>"
+        html = "<!docstype html>\r\n"
+        html += "<html lang='de'>\r\n"
+        html += "<head>\r\n"
+        html += "<meta charset='UTF-8'>\r\n"
+        html += "<meta name='viewport' content='width=device-width, initial-scale=1'>\r\n"
+        html += "<title>home temperature observation</title>\r\n"
         if filename == "":
-            html += "<meta http-equiv='refresh' content='5'>"
-        html += "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' integrity='sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm' crossorigin='anonymous'>"
-        html += "<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.1.1/css/all.css' integrity='sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ' crossorigin='anonymous'>"
-        html += "</head>"
-        html += "<body>"
-        html += "<div class='container'>"
-        html += "<main>"
+            html += "<meta http-equiv='refresh' content='5'>\r\n"
+        else:
+            hlog, hjs = readlog(filename, compareidx)
+            if compareidx > 0:
+                html += hjs
+        html += "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' integrity='sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm' crossorigin='anonymous'>\r\n"
+        html += "<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.1.1/css/all.css' integrity='sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ' crossorigin='anonymous'>\r\n"
+        html += "</head>\r\n"
+        html += "<body>\r\n"
+        html += "<div class='container'>\r\n"
+        html += "<main>\r\n"
         if filename == "":
             html += "<h2><i class='fas fa-home'></i> &Uuml;bersicht</h2>"
             html += "<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
+            html += "<hr>"
             html += fkt_gethtmltable(False)
             html += "<form action='' method='post'>"
             html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='relstate'>"
@@ -122,27 +168,27 @@ class RequestHandler(BaseHTTPRequestHandler):
             html += "</button>"
             html += "</form>"
             html += "<hr>"
-            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'>Logfiles <i class='fas fa-caret-right'></i></button></form>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'>Aufzeichnungen <i class='fas fa-caret-right'></i></button></form>"
         elif filename == "logfiles":
-            html += "<h2><i class='fas fa-file'></i> Logfiles</h2>"
+            html += "<h2><i class='fas fa-copy'></i> Aufzeichnungen</h2>"
             html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><i class='fas fa-caret-left'></i> &Uuml;bersicht</button></form>"
             html += "<hr>"
-            html += "Temperaturaufzeichnung<br>"
+            html += "Temperatur<br>"
             html += "<form action='' method='post'>"
             html += "<div class='btn-group-vertical'>"
-            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log1'>Obergescho&szlig;</button></form>"
-            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='log2'>Halle</button></form>"
-            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log3'>Schlafzimmer</button></form>"
-            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='log4'>Toilette</button></form>"
-            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log5'>Badezimmer</button></form>"
-            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='log6'>K&uuml;che</button></form>"
-            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log7'>Heizung</button></form>"
-            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='log8'>B&uuml;ro</button></form>"
-            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log9'>Au&szlig;en</button>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log1'>Obergescho&szlig;</button></form>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log2'>Halle</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log3'>Schlafzimmer</button></form>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log4'>Toilette</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log5'>Badezimmer</button></form>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log6'>K&uuml;che</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log7'>Heizung</button></form>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log8'>B&uuml;ro</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log9'>Au&szlig;en</button>"
             html += "</div>"
             html += "</form>"
             html += "<hr>"
-            html += "Gesamt<br>"
+            html += "Logfiles<br>"
             html += "<form action='' method='post'>"
             html += "<div class='btn-group-vertical'>"
             html += "<button type='submit' class='btn btn-secondary btn-lg' name='log0'>Temperatur</button></form>"
@@ -150,16 +196,40 @@ class RequestHandler(BaseHTTPRequestHandler):
             html += "</div>"
             html += "</form>"
         else:
-            html += "<h2><i class='fas fa-file'></i> Logfile {:s}</h2>".format(filename)
-            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Auswahl</button></form>"
+            if compareidx == 0:
+                html += "<h2><i class='fas fa-file'></i> {:s}</h2>".format(filename)
+            else:
+                if   compareidx == 1:
+                    name = "Obergescho&szlig;"
+                elif compareidx == 2:
+                    name = "Halle"
+                elif compareidx == 3:
+                    name = "Schlafzimmer"
+                elif compareidx == 4:
+                    name = "Toilette"
+                elif compareidx == 5:
+                    name = "Badezimmer"
+                elif compareidx == 6:
+                    name = "K&uuml;che"
+                elif compareidx == 7:
+                    name = "Heizung"
+                elif compareidx == 8:
+                    name = "B&uuml;ro"
+                elif compareidx == 9:
+                    name = "Au&szlig;en"
+                else:
+                    name = "Aufzeichnung"
+                html += "<h2><i class='fas fa-file-medical-alt'></i> {:s}</h2>".format(name)
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Zur&uuml;ck</button></form>"
+            html += "<div id='curve_chart' style='width: 400px; height: 200px'></div>"
             html += "<p><pre>"
-            html += readlog(filename, compareidx)
+            html += hlog
             html += "</pre></p>"
-            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Auswahl</button></form>"
-        html += "</main>"
-        html += "</div>"
-        html += "</body>"
-        html += "</html>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Zur&uuml;ck</button></form>"
+        html += "\r\n</main>\r\n"
+        html += "</div>\r\n"
+        html += "</body>\r\n"
+        html += "</html>\r\n"
         self.senddata(html)
 
     def do_GET2(self):

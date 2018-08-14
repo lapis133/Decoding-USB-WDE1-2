@@ -1,40 +1,126 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 import configparser
+import datetime
 import log
 import threading
 import time
 import base64
 import ssl
 
-hsvr = None
+s_hsvr = None
+s_key  = ""
 fkt_gethtmltable = None
-fkt_relstate = None
-fkt_relupdate = None
-fkt_led = None
+fkt_relstate     = None
+fkt_relupdate    = None
+fkt_led          = None
 
-key = ""
+FAVICON = b"AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAB\
+            ILAAASCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjAA\
+            AATQAAAE0AAABNAAAAOAAAAAAAAAAAAAAAOAAAAE0AAABNAAAATQAAACMAAAAA\
+            AAAAAAAAAAAAAAAAAAAAtAAAAP8AAAD/AAAA/wAAALoAAAAAAAAAAAAAALoAAA\
+            D/AAAA/wAAAP8AAAC0AAAAAAAAAAAAAAAAAAAAAAAAALcAAAD/AAAA/wAAAP8A\
+            AAC6AAAAAAAAAAAAAAC6AAAA/wAAAP8AAAD/AAAAtwAAAAAAAAAAAAAAAAAAAA\
+            AAAAC3AAAA/wAAAP8AAAD/AAAAugAAAAAAAAAAAAAAugAAAP8AAAD/AAAA/wAA\
+            ALcAAAAAAAAAAAAAAAAAAAAAAAAAtwAAAP8AAAD/AAAA/wAAANwAAAB/AAAAfw\
+            AAANwAAAD/AAAA/wAAAP8AAAC3AAAAAAAAAAAAAAAEAAAAAgAAALcAAAD/AAAA\
+            /wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAAtwAAAAIAAAAEAA\
+            AAsAAAAK8AAABbAAAA8wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/\
+            AAAA8wAAAFsAAACvAAAAsAAAAIkAAAD+AAAA0AAAAE8AAADfAAAA/wAAAP8AAA\
+            D/AAAA/wAAAP8AAAD/AAAA3wAAAE8AAADQAAAA/gAAAIkAAAAAAAAAXwAAAPgA\
+            AADoAAAAUAAAAMIAAAD/AAAA/wAAAP8AAAD/AAAAwgAAAFEAAADoAAAA+AAAAF\
+            8AAAAAAAAAAAAAAAAAAAA7AAAA6AAAAPcAAABlAAAAmwAAAP8AAAD/AAAAmwAA\
+            AGUAAAD3AAAA/wAAALcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAADRAAAA/g\
+            AAAIkAAABwAAAAcAAAAIkAAAD+AAAA/wAAAP8AAAC3AAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAADQAAAK8AAAD/AAAAsQAAALEAAAD/AAAArgAAANwAAAD/AA\
+            AAtwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAhwAAAP4AAAD+\
+            AAAAhwAAAAIAAADSAAAA/wAAALcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAABDAAAAQwAAAAAAAAAAAAAASgAAAGAAAABAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAAAAAAAAAAAAAAAA//8AAMGDAADBgwAAwYMAAMGDAADAAwAAAAAAAAAA\
+            AAAAAAAAAAAAAMADAADgAwAA8AMAAPgDAAD8IwAA//8AAA=="
 
-#----------------------------[serverthread]
-def readlog():
+#----------------------------[preparechart]
+def preparechart():
+    return "\
+<script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>\r\n\
+<script type='text/javascript'>\r\n\
+    google.charts.load('current', {'packages':['corechart']});\r\n\
+    google.charts.setOnLoadCallback(drawChart);\r\n\
+    function drawChart() {\r\n\
+    var data = google.visualization.arrayToDataTable([\r\n\
+        ['Datum', 'Temperatur'],\r\n\
+        *DATA*\r\n\
+    ]);\r\n\
+    \r\n\
+    var options = {\r\n\
+        title: 'Temperaturverlauf',\r\n\
+        curveType: 'function',\r\n\
+        legend: { position: 'none' },\r\n\
+        hAxis: { slantedText:true, slantedTextAngle:90 }\r\n\
+    };\r\n\
+    \r\n\
+    var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));\r\n\
+    chart.draw(data, options);\r\n\
+    }\r\n\
+</script>\r\n"
+
+#----------------------------[readlog]
+def readlog(filename, compareidx):
     log = ""
     try:
-        f = open("/var/log/serialmon_01.log","r")
+        f = open("/var/log/{:s}".format(filename),"r")
     except Exception:
         try:
-            f = open("serialmon_01.log","r")
+            f = open(filename,"r")
         except Exception:
-            return "no log found"
+            return "no log found", ""
+
+    if compareidx > 0:
+        js = preparechart()
+    else:
+        js = ""
+    data = ""
+    ctime = datetime.datetime.today() - datetime.timedelta(days=15)
 
     while True:
         rl = f.readline()
         if not rl:
-            break;
+            break
         line = str(rl)
-        log += line.replace('\n', "<br>")
 
-    return log
+        if compareidx > 0:
+            try:
+                date = datetime.datetime.strptime(line[:10], "%d.%m.%Y")
+                if date < ctime:
+                    continue
+            except Exception:
+                pass
+
+            values = line.split(";")
+            try:
+                tval = values[0]
+                temp = values[compareidx]
+                humi = values[compareidx+10]
+                log += "{:s} {:>5s} &deg;C {:>5s} %<br>".format(tval, temp, humi)
+                try:
+                    x = float(temp)
+                    data += "['{:s}', {:s}],\r\n".format(tval[:6], temp)
+                except:
+                    pass
+            except Exception:
+                log += "-<br>"
+        else:
+            log += line.replace('\n', "<br>")
+
+    log   = log.replace("<br><br>", "<br>")
+    data  = data.strip(',\r\n')
+    data += "\r\n"
+    js    = js.replace("*DATA*", data)
+    return log, js
 
 #----------------------------[MyServer]
 class RequestHandler(BaseHTTPRequestHandler):
@@ -49,49 +135,140 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
+    def resp_location(self, path):
+        self.send_response(302)
+        self.send_header('Location', path)
+        self.end_headers()
+
     def senddata(self, data):
         self.wfile.write(bytes(data, "utf-8"))
 
-    def resp_page(self, logflag):
-        if logflag == 0:
-            self.senddata("<html>")
-            self.senddata("<head><title>home temperature observation</title><meta http-equiv='refresh' content='5'></head>")
-            self.senddata("<body><font face='verdana,arial'>")
-            self.senddata("<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
-            self.senddata(fkt_gethtmltable())
-            if fkt_relstate() == 1:
-                self.senddata("<form action='' method='post'><button name='relstate'>Heizung aus</button></form>")
-            else:
-                self.senddata("<form action='' method='post'><button name='relstate'>Heizung ein</button></form>")
-            self.senddata("<form action='' method='post'><button name='log'>Logfile</button></form>")
-            self.senddata("</body>")
+    def resp_page(self, filename, compareidx):
+        html = "<!docstype html>\r\n"
+        html += "<html lang='de'>\r\n"
+        html += "<head>\r\n"
+        html += "<meta charset='UTF-8'>\r\n"
+        html += "<meta name='viewport' content='width=device-width, initial-scale=1'>\r\n"
+        html += "<title>home temperature observation</title>\r\n"
+        if filename == "":
+            html += "<meta http-equiv='refresh' content='5'>\r\n"
         else:
-            self.senddata("<html>")
-            self.senddata("<head><title>home temperature observation</title></head>")
-            self.senddata("<body><font face='verdana,arial'>")
-            self.senddata("<p>{:s}</p><tt>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime())))
-            self.senddata(readlog())
-            self.senddata("</tt></body>")
+            hlog, hjs = readlog(filename, compareidx)
+            if compareidx > 0:
+                html += hjs
+        html += "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' integrity='sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm' crossorigin='anonymous'>\r\n"
+        html += "<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.1.1/css/all.css' integrity='sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ' crossorigin='anonymous'>\r\n"
+        html += "</head>\r\n"
+        html += "<body>\r\n"
+        html += "<div class='container'>\r\n"
+        html += "<main>\r\n"
+        if filename == "":
+            html += "<h2><i class='fas fa-home'></i> &Uuml;bersicht</h2>"
+            html += "<p>{:s}</p>".format(time.strftime("%d-%m-%Y Time: %H:%M:%S",time.localtime()))
+            html += "<hr>"
+            html += fkt_gethtmltable(False)
+            html += "<form action='' method='post'>"
+            html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='relstate'>"
+            if fkt_relstate() == 1:
+                html += "Heizung ausschalten <i class='fas fa-ban'></i>"
+            else:
+                html += "Heizung einschalten <i class='fas fa-fire'></i>"
+            html += "</button>"
+            html += "</form>"
+            html += "<hr>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'>Aufzeichnungen <i class='fas fa-caret-right'></i></button></form>"
+        elif filename == "logfiles":
+            html += "<h2><i class='fas fa-copy'></i> Aufzeichnungen</h2>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='main'><i class='fas fa-caret-left'></i> &Uuml;bersicht</button></form>"
+            html += "<hr>"
+            html += "Temperatur<br>"
+            html += "<form action='' method='post'>"
+            html += "<div class='btn-group-vertical'>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log1'>Obergescho&szlig;</button></form>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log2'>Halle</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log3'>Schlafzimmer</button></form>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log4'>Toilette</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log5'>Badezimmer</button></form>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log6'>K&uuml;che</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log7'>Heizung</button></form>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log8'>B&uuml;ro</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log9'>Au&szlig;en</button>"
+            html += "</div>"
+            html += "</form>"
+            html += "<hr>"
+            html += "Logfiles<br>"
+            html += "<form action='' method='post'>"
+            html += "<div class='btn-group-vertical'>"
+            html += "<button type='submit' class='btn btn-secondary btn-lg' name='log0'>Temperatur</button></form>"
+            html += "<button type='submit' class='btn btn-outline-secondary btn-lg' name='logsys'>System</button></form>"
+            html += "</div>"
+            html += "</form>"
+        else:
+            if compareidx == 0:
+                html += "<h2><i class='fas fa-file'></i> {:s}</h2>".format(filename)
+            else:
+                if   compareidx == 1:
+                    name = "Obergescho&szlig;"
+                elif compareidx == 2:
+                    name = "Halle"
+                elif compareidx == 3:
+                    name = "Schlafzimmer"
+                elif compareidx == 4:
+                    name = "Toilette"
+                elif compareidx == 5:
+                    name = "Badezimmer"
+                elif compareidx == 6:
+                    name = "K&uuml;che"
+                elif compareidx == 7:
+                    name = "Heizung"
+                elif compareidx == 8:
+                    name = "B&uuml;ro"
+                elif compareidx == 9:
+                    name = "Au&szlig;en"
+                else:
+                    name = "Aufzeichnung"
+                html += "<h2><i class='fas fa-file-medical-alt'></i> {:s}</h2>".format(name)
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Zur&uuml;ck</button></form>"
+            if compareidx > 0:
+                html += "<div id='curve_chart' style='width: 400px; height: 250px'></div>"
+            html += "<p><pre>"
+            html += hlog
+            html += "</pre></p>"
+            html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Zur&uuml;ck</button></form>"
+        html += "\r\n</main>\r\n"
+        html += "</div>\r\n"
+        html += "</body>\r\n"
+        html += "</html>\r\n"
+        self.senddata(html)
 
     def do_GET2(self):
-        log.info("websvr", "do_GET")
-        self.resp_header()
-        if   self.path == "/":
-            self.resp_page(0)
-        elif self.path == "/log":
-            self.resp_page(1)
+        if self.path == "/favicon.ico":
+            self.send_response(200)
+            self.send_header('Content-type', 'image/gif')
+            self.end_headers()
+            self.wfile.write(base64.b64decode(FAVICON))
+        else:
+            path = str(self.path)
+            self.resp_header()
+            if self.path == "/logfiles":
+                self.resp_page("logfiles", 0)
+            elif self.path == "/logsys":
+                self.resp_page("serialmon_info.log", 0)
+            elif path[:4] == "/log" and len(path) >= 5:
+                self.resp_page("serialmon_01.log", int(path[4]))
+            else:
+                self.resp_page("", 0)
 
     def do_GET(self):
-        log.info("websvr", "do_GET")
-        global key
-        if key == "":
+        global s_key
+        if s_key == "":
             self.do_GET2()
         else:
             if self.headers.get('Authorization') == None:
                 self.resp_auth()
                 self.senddata("no auth header received")
                 pass
-            elif self.headers.get('Authorization') == "Basic "+key:
+            elif self.headers.get('Authorization') == "Basic "+s_key:
                 self.do_GET2()
                 pass
             else:
@@ -103,28 +280,36 @@ class RequestHandler(BaseHTTPRequestHandler):
         content_length = self.headers.get('content-length')
         length = int(content_length[0]) if content_length else 0
         val = str(self.rfile.read(length))
-
-        log.info("websvr", "do_POST: {:s}".format(val))
-        self.resp_header()
-        if val.find("relstate") != -1:
+        if val.find("relstate=") != -1:
+            log.info("websvr", "do_POST: {:s}".format(val))
             if fkt_relstate() == 1:
                 fkt_relupdate(0)
             else:
                 fkt_relupdate(1)
-            self.resp_page(0)
-        elif val.find ("log") != -1:
-            self.resp_page(1)
+            self.resp_location("/")
+        elif val.find ("logfiles=") != -1:
+            self.resp_location("/logfiles")
+        elif val.find ("logsys=") != -1:
+            self.resp_location("/logsys")
+        else:
+            pos = val.find("log")
+            if   pos != -1:
+                if pos + 4 < len(val):
+                    log.info("websvr", "get {:s} [{:s}]".format(val, self.address_string()))
+                    self.resp_location(val[pos:pos+4])
+                    return
+            self.resp_location("/")
 
     def do_POST(self):
-        global key
-        if key == "":
+        global s_key
+        if s_key == "":
             self.do_POST2()
         else:
             if self.headers.get('Authorization') == None:
                 self.resp_auth()
                 self.senddata("no auth header received")
                 pass
-            elif self.headers.get('Authorization') == "Basic "+key:
+            elif self.headers.get('Authorization') == "Basic "+s_key:
                 self.do_POST2()
                 pass
             else:
@@ -133,8 +318,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                 pass
 
 #----------------------------[serverthread]
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """ This class allows to handle requests in separated threads.
+        No further content needed, don't touch this. """
+
+#----------------------------[serverthread]
 def serverthread():
-    global hsvr
+    global s_hsvr
     global key
 
     log.info("websvr", "init")
@@ -161,7 +351,7 @@ def serverthread():
     # start
     while True:
         try:
-            hsvr = HTTPServer(("", 4711), RequestHandler)
+            s_hsvr = ThreadedHTTPServer(("", 4711), RequestHandler)
         except Exception:
             time.sleep(1)
 
@@ -169,11 +359,11 @@ def serverthread():
             f = open("/usr/local/etc/serialmon_01.pem","r")
             f.close()
             try:
-                hsvr.socket = ssl.wrap_socket(hsvr.socket, server_side=True, certfile="/usr/local/etc/serialmon_01.pem", ssl_version=ssl.PROTOCOL_TLSv1)
+                s_hsvr.socket = ssl.wrap_socket(s_hsvr.socket, server_side=True, certfile="/usr/local/etc/serialmon_01.pem", ssl_version=ssl.PROTOCOL_TLSv1)
                 break
             except Exception as e:
                 print (str(e))
-                hsvr.server_close()
+                s_hsvr.server_close()
                 time.sleep(1)
         except Exception:
             log.info("websvr", "https is disabled")
@@ -183,17 +373,17 @@ def serverthread():
     log.info("websvr", "started")
     fkt_led(1)
     try:
-        hsvr.serve_forever()
+        s_hsvr.serve_forever()
     except KeyboardInterrupt:
-        hsvr.server_close()
+        s_hsvr.server_close()
     log.info("websvr", "stop")
     return
 
 #----------------------------[stop]
 def stop():
-    global hsvr
-    if hsvr != None:
-        hsvr.shutdown()
+    global s_hsvr
+    if s_hsvr != None:
+        s_hsvr.shutdown()
     return
 
 #----------------------------[start]

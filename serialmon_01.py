@@ -83,8 +83,8 @@ def once_a_hour():
     log.info("main", "once_a_hour")
 
     logline = ""
-    for val in values:
-        logline += str(val) + ";"
+    for i in range(20):
+        logline += str(values[i]) + ";"
     logline = logline.replace(' ', '')
     log.line(logline)
     return

@@ -60,7 +60,7 @@ def preparechart():
         title: 'Temperaturverlauf',\r\n\
         curveType: 'function',\r\n\
         legend: { position: 'none' },\r\n\
-        hAxis: { slantedText:true, slantedTextAngle:90 }\r\n\
+        hAxis: { textPosition: 'none' }\r\n\
     };\r\n\
     \r\n\
     var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));\r\n\
@@ -108,7 +108,7 @@ def readlog(filename, compareidx):
                 log += "{:s} {:>5s} &deg;C {:>5s} %<br>".format(tval, temp, humi)
                 try:
                     x = float(temp)
-                    data += "['{:s}', {:s}],\r\n".format(tval[:6], temp)
+                    data += "['{:s}', {:s}],\r\n".format(tval[:16], temp)
                 except:
                     pass
             except Exception:
@@ -230,7 +230,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 html += "<h2><i class='fas fa-file-medical-alt'></i> {:s}</h2>".format(name)
             html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'><i class='fas fa-caret-left'></i> Zur&uuml;ck</button></form>"
             if compareidx > 0:
-                html += "<div id='curve_chart' style='width: 400px; height: 250px'></div>"
+                html += "<div id='curve_chart' style='width: 600px; height: 300px'></div>"
             html += "<p><pre>"
             html += hlog
             html += "</pre></p>"

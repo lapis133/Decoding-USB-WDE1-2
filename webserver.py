@@ -253,7 +253,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             if self.path == "/logfiles":
                 self.resp_page("logfiles", 0)
             elif self.path == "/logsys":
-                self.resp_page("serialmon_info.log", 0)
+                self.resp_page("serialmon_info_{:s}.log".format(time.strftime("%Y-%m")), 0)
             elif path[:4] == "/log" and len(path) >= 5:
                 self.resp_page("serialmon_01.log", int(path[4]))
             else:

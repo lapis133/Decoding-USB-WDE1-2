@@ -7,6 +7,7 @@ from serial import SerialException
 import time
 import sys
 import configparser
+import pickle
 # own modules
 import gpio as GPIO
 import sensors
@@ -24,6 +25,34 @@ lval    = list(values) # last vulues
 diff    = list(values) # diffs
 hcode   = list(values) # html diff
 ds1820  = False
+
+#----------------------------[readlval]
+def readlval():
+    global lval
+
+    try:
+        with open ("serialmon_01.pic", 'rb') as fp:
+            array = pickle.load(fp)
+        lval = list(array)
+    except Exception:
+        lval = list(values)
+    return
+
+#----------------------------[savelval]
+def savelval():
+    try:
+        with open("/usr/local/etc/serialmon_01.pic", 'wb') as fp:
+            pickle.dump(lval, fp)
+        return
+    except OSError:
+        pass
+    try:
+        with open("serialmon_01.pic", 'wb') as fp:
+            pickle.dump(lval, fp)
+        return
+    except OSError:
+        pass
+    return
 
 #----------------------------[relstate]
 def relstate():
@@ -113,6 +142,7 @@ def once_a_day(sendmail):
             diff[i] = "-"
             hcode[i] = "-"
     lval = list(values)
+    savelval()
 
     # send mail
     if sendmail == 1:
@@ -247,6 +277,7 @@ def main():
         ds1820 = True
 
     # init
+    readlval()
     GPIO.init()
     sensors.start()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)

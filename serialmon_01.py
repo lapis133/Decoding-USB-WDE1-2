@@ -31,6 +31,13 @@ def readlval():
     global lval
 
     try:
+        with open ("/usr/local/etc/serialmon_01.pic", 'rb') as fp:
+            array = pickle.load(fp)
+        lval = list(array)
+        return
+    except Exception:
+        pass
+    try:
         with open ("serialmon_01.pic", 'rb') as fp:
             array = pickle.load(fp)
         lval = list(array)

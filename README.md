@@ -27,7 +27,7 @@ sudo chmod +r serialmon_01.pem
 If using DHT22:
 ```
 sudo apt-get update
-sudo apt-get install build-essential python-dev
+sudo apt-get install build-essential python-dev python-setuptools
 
 git clone https://github.com/adafruit/Adafruit_Python_DHT.git && cd Adafruit_Python_DHT
 sudo python setup.py install
@@ -53,11 +53,11 @@ sudo kill [pid]
 
 **Running (DHT22)**
 ```
-sudo python serialmon_dht22.py
+sudo python serialmon_sensor.py
 ```
 or
 ```
-sudo python serialmon_dht22.py &
+sudo python serialmon_sensor.py &
 ```
 
 ## optional hardware layout

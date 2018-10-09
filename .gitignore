@@ -89,7 +89,9 @@ ENV/
 
 # Spyder project settings
 .spyderproject
-.spyproject
+.spyproject# VS
+.json
+.vscode
 
 # Rope project settings
 .ropeproject
@@ -103,3 +105,5 @@ ENV/
 # VS
 .json
 .vscode
+*.pic
+*.pem

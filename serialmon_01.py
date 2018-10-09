@@ -7,6 +7,7 @@ from serial import SerialException
 import time
 import sys
 import configparser
+import pickle
 # own modules
 import gpio as GPIO
 import sensors
@@ -23,7 +24,42 @@ values  = ["?"] * (16+4)
 lval    = list(values) # last vulues
 diff    = list(values) # diffs
 hcode   = list(values) # html diff
-ds1820  = False
+ds1820  = 0
+
+#----------------------------[readlval]
+def readlval():
+    global lval
+
+    try:
+        with open ("/usr/local/etc/serialmon_01.pic", 'rb') as fp:
+            array = pickle.load(fp)
+        lval = list(array)
+        return
+    except Exception:
+        pass
+    try:
+        with open ("serialmon_01.pic", 'rb') as fp:
+            array = pickle.load(fp)
+        lval = list(array)
+    except Exception:
+        lval = list(values)
+    return
+
+#----------------------------[savelval]
+def savelval():
+    try:
+        with open("/usr/local/etc/serialmon_01.pic", 'wb') as fp:
+            pickle.dump(lval, fp)
+        return
+    except OSError:
+        pass
+    try:
+        with open("serialmon_01.pic", 'wb') as fp:
+            pickle.dump(lval, fp)
+        return
+    except OSError:
+        pass
+    return
 
 #----------------------------[relstate]
 def relstate():
@@ -68,7 +104,7 @@ def gethtmltable(showicons):
     html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], xcode[6], fval[16], xcode[16])
     html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], xcode[7], fval[17], xcode[17])
     html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], xcode[8], fval[18], xcode[18])
-    if ds1820 == True:
+    if ds1820 == 1:
         html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], xcode[9], fval[19], xcode[19])
     html += "</table></pre></p>"
     if relstate() == 1:
@@ -83,8 +119,8 @@ def once_a_hour():
     log.info("main", "once_a_hour")
 
     logline = ""
-    for val in values:
-        logline += str(val) + ";"
+    for i in range(20):
+        logline += str(values[i]) + ";"
     logline = logline.replace(' ', '')
     log.line(logline)
     return
@@ -113,6 +149,7 @@ def once_a_day(sendmail):
             diff[i] = "-"
             hcode[i] = "-"
     lval = list(values)
+    savelval()
 
     # send mail
     if sendmail == 1:
@@ -136,6 +173,9 @@ def analyze(newline):
     values.insert(9,  sin[2])
     values.insert(18, sin[1])
     values.insert(19, sin[3])
+    if ds1820 == 2:
+        values[8]  = values[9]
+        values[18] = values[19]
 
     # format
     for i in range(20):
@@ -160,7 +200,7 @@ def analyze(newline):
     print("Heizung      {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
     print("Büro         {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[7], diff[7], values[17], diff[17]))
     print("Außen        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[8], diff[8], values[18], diff[18]))
-    if ds1820 == True:
+    if ds1820 == 1:
         print("DS1820       {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
     return
 
@@ -244,9 +284,12 @@ def main():
         ds_val   = ""
         log.info("main", "serialmon_01.ini not filled")
     if ds_val.upper() == "YES":
-        ds1820 = True
+        ds1820 = 1
+    if ds_val.upper() == "ONLY":
+        ds1820 = 2
 
     # init
+    readlval()
     GPIO.init()
     sensors.start()
     webserver.start(gethtmltable, relstate, relupdate, GPIO.tcp_status)

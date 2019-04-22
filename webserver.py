@@ -168,12 +168,18 @@ class RequestHandler(BaseHTTPRequestHandler):
             html += "<hr>"
             html += fkt_gethtmltable(False)
             html += "<form action='' method='post'>"
-            html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='relstate'>"
-            if fkt_relstate() == 1:
+            if fkt_relstate():
+                html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='rel0'>"
                 html += "Heizung ausschalten <i class='fas fa-ban'></i>"
+                html += "</button>"
             else:
-                html += "Heizung einschalten <i class='fas fa-fire'></i>"
-            html += "</button>"
+                html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='rel1'>"
+                html += "Heizung für eine Stunde einschalten <i class='fas fa-stopwatch'></i>"
+                html += "</button>"
+                html += "<br><br>"
+                html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='rel2'>"
+                html += "Heizung dauerhaft einschalten <i class='fas fa-fire'></i>"
+                html += "</button>"
             html += "</form>"
             html += "<hr>"
             html += "<form action='' method='post'><button type='submit' class='btn btn-primary btn-sm' name='logfiles'>Aufzeichnungen <i class='fas fa-caret-right'></i></button></form>"
@@ -190,9 +196,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log4'>Toilette</button></form>"
             html += "<button type='submit' class='btn btn-info btn-lg' name='log5'>Badezimmer</button></form>"
             html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log6'>K&uuml;che</button></form>"
-            html += "<button type='submit' class='btn btn-info btn-lg' name='log7'>Heizung</button></form>"
+            html += "<button type='submit' class='btn btn-info btn-lg' name='log7'>(Frei)</button></form>"
             html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log8'>B&uuml;ro</button></form>"
             html += "<button type='submit' class='btn btn-info btn-lg' name='log9'>Au&szlig;en</button>"
+            html += "<button type='submit' class='btn btn-outline-info btn-lg' name='log10'>Heizung</button></form>"
             html += "</div>"
             html += "</form>"
             html += "<hr>"
@@ -225,6 +232,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                     name = "B&uuml;ro"
                 elif compareidx == 9:
                     name = "Au&szlig;en"
+                elif compareidx == 10:
+                    name = "Heizung"
                 else:
                     name = "Aufzeichnung"
                 html += "<h2><i class='fas fa-file-medical-alt'></i> {:s}</h2>".format(name)
@@ -255,7 +264,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             elif self.path == "/logsys":
                 self.resp_page("serialmon_info_{:s}.log".format(time.strftime("%Y-%m")), 0)
             elif path[:4] == "/log" and len(path) >= 5:
-                self.resp_page("serialmon_01.log", int(path[4]))
+                self.resp_page("serialmon_01.log", int(path[4:]))
             else:
                 self.resp_page("", 0)
 
@@ -280,23 +289,21 @@ class RequestHandler(BaseHTTPRequestHandler):
         content_length = self.headers.get('content-length')
         length = int(content_length[0]) if content_length else 0
         val = str(self.rfile.read(length))
-        if val.find("relstate=") != -1:
+        if val.find("rel") == 2:
             log.info("websvr", "do_POST: {:s}".format(val))
-            if fkt_relstate() == 1:
-                fkt_relupdate(0)
-            else:
-                fkt_relupdate(1)
+            fkt_relupdate(int(val[2+3]))
             self.resp_location("/")
-        elif val.find ("logfiles=") != -1:
+        elif val.find ("logfiles=") == 2:
             self.resp_location("/logfiles")
-        elif val.find ("logsys=") != -1:
+        elif val.find ("logsys=") == 2:
             self.resp_location("/logsys")
         else:
             pos = val.find("log")
-            if   pos != -1:
-                if pos + 4 < len(val):
-                    log.info("websvr", "get {:s} [{:s}]".format(val, self.address_string()))
-                    self.resp_location(val[pos:pos+4])
+            if pos == 2:
+                log.info("websvr", "get {:s} [{:s}]".format(val, self.address_string()))
+                po2 = val.find("=")
+                if po2 != -1:
+                    self.resp_location(val[2:po2])
                     return
             self.resp_location("/")
 

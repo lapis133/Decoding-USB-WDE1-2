@@ -24,7 +24,6 @@ values  = ["?"] * (16+4)
 lval    = list(values) # last vulues
 diff    = list(values) # diffs
 hcode   = list(values) # html diff
-ds1820  = 0
 
 #----------------------------[readlval]
 def readlval():
@@ -101,15 +100,16 @@ def gethtmltable(showicons):
     html += "<tr><td>Toilette         </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[3], xcode[3], fval[13], xcode[13])
     html += "<tr><td>Badezimmer       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[4], xcode[4], fval[14], xcode[14])
     html += "<tr><td>K&uuml;che       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[5], xcode[5], fval[15], xcode[15])
-    html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], xcode[6], fval[16], xcode[16])
+    html += "<tr><td>(Frei)           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], xcode[6], fval[16], xcode[16])
     html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], xcode[7], fval[17], xcode[17])
     html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], xcode[8], fval[18], xcode[18])
-    if ds1820 == 1:
-        html += "<tr><td>DS1820           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], xcode[9], fval[19], xcode[19])
+    html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], xcode[9], fval[19], xcode[19])
     html += "</table></pre></p>"
-    if relstate() == 1:
+    if   relstate() == 1:
         rest = int(60*60 - (time.time() - reltimer()))
         html += "<p>Heizung ist ein (noch {:d}m {:d}s)</p>".format(int(rest / 60), int(rest % 60))
+    elif relstate() == 2:
+        html += "<p>Heizung ist <b>dauerhaft</b> ein</p>"
     else:
         html += "<p>Heizung ist aus</p>"
     return html
@@ -173,9 +173,6 @@ def analyze(newline):
     values.insert(9,  sin[2])
     values.insert(18, sin[1])
     values.insert(19, sin[3])
-    if ds1820 == 2:
-        values[8]  = values[9]
-        values[18] = values[19]
 
     # format
     for i in range(20):
@@ -197,11 +194,10 @@ def analyze(newline):
     print("Toilette     {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[3], diff[3], values[13], diff[13]))
     print("Badezimmer   {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[4], diff[4], values[14], diff[14]))
     print("Küche        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[5], diff[5], values[15], diff[15]))
-    print("Heizung      {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
+    print("(Frei)       {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
     print("Büro         {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[7], diff[7], values[17], diff[17]))
     print("Außen        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[8], diff[8], values[18], diff[18]))
-    if ds1820 == 1:
-        print("DS1820       {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
+    print("Heizung      {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
     return
 
 #----------------------------[run_test]
@@ -267,8 +263,6 @@ def serial_init():
 
 #----------------------------[main]
 def main():
-    global ds1820
-
     # config
     config = configparser.ConfigParser()
     config.read('/usr/local/etc/serialmon_01.ini')
@@ -276,17 +270,12 @@ def main():
         mail_oad = config["EMAIL"]["SEND_ONCE_A_DAY"]
         mail_int = config["EMAIL"]["SEND_INTERVAL"]
         log_int  = config["LOGGING"]["INTERVAL"]
-        ds_val   = config["LOGGING"]["DS1820"]
     except KeyError:
         mail_oad = ""
         mail_int = ""
         log_int  = ""
         ds_val   = ""
         log.info("main", "serialmon_01.ini not filled")
-    if ds_val.upper() == "YES":
-        ds1820 = 1
-    if ds_val.upper() == "ONLY":
-        ds1820 = 2
 
     # init
     readlval()

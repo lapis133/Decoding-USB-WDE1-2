@@ -14,7 +14,7 @@ def senddata(array):
     try:
         s.connect(("127.0.0.1", 4712))
     except Exception:
-        log.info("dht", "connection failed")
+        log.info("ds1820", "connection failed")
         return
     data = "serialmon;{:s};{:s};{:s};{:s}".format(array[0], array[1], array[2], array[3])
     s.send(data.encode("utf-8"))
@@ -23,14 +23,16 @@ def senddata(array):
 
 #----------------------------[ds1820]
 def ds1820():
+    values = [ "?", "-", "?", "-"]
     try:
         file = open('/sys/devices/w1_bus_master1/w1_master_slaves')
         w1_slaves = file.readlines()
         file.close()
     except Exception:
-        log.info("dht", "ds1820: access denied")
-        return "?", "-"
+        log.info("ds1820", "ds1820: access denied")
+        return values
 
+    pos = 0
     try:
         for line in w1_slaves:
             w1_slave = line.split("\n")[0]
@@ -43,12 +45,14 @@ def ds1820():
 
             sval = "{:.1f}".format(temperature)
             print ("DS1820: " + sval)
-            return sval, "-"
+            if pos < 4:
+                values[pos] = sval
+            pos += 2
 
     except Exception:
-        log.info("dht", "ds1820: device error")
+        log.info("ds1820", "ds1820: device error")
 
-    return "?", "-"
+    return values
 
 #----------------------------[main]
 def main():
@@ -57,10 +61,7 @@ def main():
     GPIO.setup(status_led, GPIO.OUT)
     GPIO.output(status_led, GPIO.HIGH)
     while True:
-        humidity, temperature = DHT.read_retry(DHT.DHT22, 10)
-        array[0] = str(temperature)
-        array[1] = str(humidity)
-        array[2], array[3] = ds1820()
+        array = ds1820()
         print (array)
         senddata(array)
         for i in range (12):
@@ -73,9 +74,9 @@ def main():
 if __name__=='__main__':
     global hsvr
     try:
-        log.info("dht", "starting")
+        log.info("ds1820", "starting")
         main()
     except:
         GPIO.cleanup()
-        log.info("dht", "exit")
+        log.info("ds1820", "exit")
         pass

@@ -100,10 +100,10 @@ def gethtmltable(showicons):
     html += "<tr><td>Toilette         </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[3], xcode[3], fval[13], xcode[13])
     html += "<tr><td>Badezimmer       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[4], xcode[4], fval[14], xcode[14])
     html += "<tr><td>K&uuml;che       </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[5], xcode[5], fval[15], xcode[15])
-    html += "<tr><td>(Frei)           </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], xcode[6], fval[16], xcode[16])
+    html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[6], xcode[6], fval[16], xcode[16])
     html += "<tr><td>B&uuml;ro        </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[7], xcode[7], fval[17], xcode[17])
     html += "<tr><td>Au&szlig;en      </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[8], xcode[8], fval[18], xcode[18])
-    html += "<tr><td>Heizung          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], xcode[9], fval[19], xcode[19])
+    html += "<tr><td>Vorlauf          </td><td>{:s} &deg;C {:s}</td><td>{:s} % {:s}</td></tr>".format(fval[9], xcode[9], fval[19], xcode[19])
     html += "</table></pre></p>"
     if   relstate() == 1:
         rest = int(60*60 - (time.time() - reltimer()))
@@ -194,10 +194,10 @@ def analyze(newline):
     print("Toilette     {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[3], diff[3], values[13], diff[13]))
     print("Badezimmer   {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[4], diff[4], values[14], diff[14]))
     print("Küche        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[5], diff[5], values[15], diff[15]))
-    print("(Frei)       {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
+    print("Heizung      {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[6], diff[6], values[16], diff[16]))
     print("Büro         {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[7], diff[7], values[17], diff[17]))
     print("Außen        {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[8], diff[8], values[18], diff[18]))
-    print("Heizung      {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
+    print("Vorlauf      {:>5s} °C {:s}  {:>3s} % {:>s}".format(values[9], diff[9], values[19], diff[19]))
     return
 
 #----------------------------[run_test]

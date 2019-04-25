@@ -169,15 +169,15 @@ class RequestHandler(BaseHTTPRequestHandler):
             html += fkt_gethtmltable(False)
             html += "<form action='' method='post'>"
             if fkt_relstate():
-                html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='rel0'>"
+                html += "<button type='submit' class='btn btn-outline-secondary btn-sm' name='rel0'>"
                 html += "Heizung ausschalten <i class='fas fa-ban'></i>"
                 html += "</button>"
             else:
-                html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='rel1'>"
+                html += "<button type='submit' class='btn btn-outline-secondary btn-sm' name='rel1'>"
                 html += "Heizung für eine Stunde einschalten <i class='fas fa-stopwatch'></i>"
                 html += "</button>"
                 html += "<br><br>"
-                html += "<button type='submit' class='btn tn-outline-secondary btn-sm' name='rel2'>"
+                html += "<button type='submit' class='btn btn-outline-secondary btn-sm' name='rel2'>"
                 html += "Heizung dauerhaft einschalten <i class='fas fa-fire'></i>"
                 html += "</button>"
             html += "</form>"
@@ -233,7 +233,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 elif compareidx == 9:
                     name = "Au&szlig;en"
                 elif compareidx == 10:
-                    name = "Heizung"
+                    name = "Vorlauf"
                 else:
                     name = "Aufzeichnung"
                 html += "<h2><i class='fas fa-file-medical-alt'></i> {:s}</h2>".format(name)

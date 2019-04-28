@@ -74,7 +74,10 @@ def relupdate(val):
     global rel_timer
 
     rel_state = val
-    GPIO.relay(rel_state)
+    if val == 0:
+        GPIO.relay(0)
+    else:
+        GPIO.relay(1)
     rel_timer = time.time()
     return
 
